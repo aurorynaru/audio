@@ -1,3 +1,5 @@
+const AppError = require('../utils/appError')
+
 require('dotenv').config({ path: `${process.cwd()}/.env` })
 
 const sendErrorDev = (err, res) => {
@@ -8,8 +10,8 @@ const sendErrorDev = (err, res) => {
 
     res.status(statusCode).json({
         status,
-        message,
-        stack
+        message
+        // stack
     })
 }
 const sendErrorProd = (err, res) => {
@@ -31,7 +33,7 @@ const sendErrorProd = (err, res) => {
     })
 }
 
-const globalErrorHandler = (req, res, next) => {
+const globalErrorHandler = (err, req, res, next) => {
     if (err.name === 'JsonWebTokenError') {
         err = new AppError('Invalid Token', 401)
     }

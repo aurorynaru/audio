@@ -19,17 +19,16 @@ checkFolder()
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // Check the file type and set destination accordingly
         if (file.mimetype.startsWith('image')) {
-            cb(null, 'uploads/images') // Save images in /uploads/images
+            cb(null, 'uploads/images')
         } else if (file.mimetype.startsWith('audio')) {
-            cb(null, 'uploads/audio') // Save audio files in /uploads/audio
+            cb(null, 'uploads/audio')
         } else {
-            cb(null, 'uploads/others') // Save other files in /uploads/others
+            cb(null, 'uploads/others')
         }
     },
     filename: function (req, file, cb) {
-        cb(null, `${Date.now()}-${file.originalname}`) // Save the file with a timestamp and original name
+        cb(null, `${Date.now()}-${file.originalname}`)
     }
 })
 
@@ -46,15 +45,15 @@ app.get('/', (req, res) => {
 
 app.use(
     '*',
-    catchAsync(async (req, res, next) => {
-        throw new AppError(`Can't find ${req.originalUrl}`, 404)
+    catchAsync(async (req, res) => {
+        throw new AppError(`Can't find ${req.originalUrl} `, 404)
     })
 )
 
 app.use(globalErrorHandler)
 
-const PORT = process.env.NODE_PORT
+const PORT = process.env.APP_PORT
 
 app.listen(PORT, () => {
-    console.log(`listen ${PORT}`)
+    console.log('running', PORT)
 })
