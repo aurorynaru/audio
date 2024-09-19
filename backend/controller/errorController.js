@@ -10,8 +10,8 @@ const sendErrorDev = (err, res) => {
 
     res.status(statusCode).json({
         status,
-        message
-        // stack
+        message,
+        stack
     })
 }
 const sendErrorProd = (err, res) => {
@@ -37,6 +37,7 @@ const globalErrorHandler = (err, req, res, next) => {
     if (err.name === 'JsonWebTokenError') {
         err = new AppError('Invalid Token', 401)
     }
+
     if (err.name === 'SequelizeUniqueConstraintError') {
         err = new AppError(err.errors[0].message, 400)
     }
