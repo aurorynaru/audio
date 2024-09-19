@@ -9,8 +9,8 @@ const catchAsync = require('./utils/catchAsync')
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controller/errorController')
 
-const uploadRoute = require('./route/uploadRoute')
 const authRoute = require('./route/authRoute')
+const audioRoute = require('./route/audioRoute')
 
 const app = express()
 app.use(express.json())
@@ -21,7 +21,7 @@ checkFolder()
 
 app.use('/api/auth', authRoute)
 
-app.use('/api/upload', uploadRoute)
+app.use('/api/audio', audioRoute)
 
 app.use(
     '*',

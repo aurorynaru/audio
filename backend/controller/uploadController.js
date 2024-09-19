@@ -54,7 +54,7 @@ const uploadAvatar = catchAsync(async (req, res, next) => {
     })
 })
 
-const uploadFiles = catchAsync(async (req, res, next) => {
+const uploadFilesController = catchAsync(async (req, res, next) => {
     // for (const element of req.files) {
     //     if (element.mimetype.startsWith('image')) {
     //         if (checkFileSize(element.size, 5250000)) {
@@ -71,7 +71,15 @@ const uploadFiles = catchAsync(async (req, res, next) => {
     await Promise.all(
         req.files.map(async (element) => {
             try {
-                const params = getParams(element)
+                let params
+                if (element.mimetype.startsWith('image')) {
+                    params = getParams(element, 'cover')
+                }
+                if (element.mimetype.startsWith('audio')) {
+                    params = getParams(element)
+                }
+
+                // const params = getParams(element, 'cover')
                 // const saveFile = new PutObjectCommand(params)
                 // await s3.send(saveFile)
 
@@ -131,8 +139,9 @@ const uploadFiles = catchAsync(async (req, res, next) => {
     //         await s3.send(saveSmall)
 
     return res.status(200).json({
-        message: 'files uploaded.'
+        message: 'files uploaded.',
+        resultAudio: req.body.user.result
     })
 })
 
-module.exports = { uploadFiles, uploadAvatar }
+module.exports = { uploadFilesController, uploadAvatar }

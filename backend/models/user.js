@@ -3,6 +3,8 @@ const { Model, DataTypes } = require('sequelize')
 const sequelize = require('../config/database')
 const bcrypt = require('bcrypt')
 const AppError = require('../utils/appError')
+const audio = require('./audio')
+const likeDislikes = require('./likedislike')
 
 const user = sequelize.define(
     'User',
@@ -108,6 +110,13 @@ const user = sequelize.define(
         modelName: 'User'
     }
 )
+
+user.hasMany(audio, { foreignKey: 'createdBy' })
+audio.belongsTo(user, { foreignKey: 'createdBy' })
+
+user.hasMany(likeDislikes, { foreignKey: 'userId' })
+likeDislikes.belongsTo(user, { foreignKey: 'userId' })
+
 module.exports = user
 // module.exports = (sequelize, DataTypes) => {
 //   class User extends Model {

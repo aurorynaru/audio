@@ -2,35 +2,43 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('Audio', {
+        await queryInterface.createTable('Replies', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER
             },
-            title: {
-                type: Sequelize.STRING,
+            content: {
+                type: Sequelize.TEXT,
                 allowNull: false
             },
-            source: {
-                type: Sequelize.ARRAY(Sequelize.STRING)
-            },
-            audioKey: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            coverKey: {
-                type: Sequelize.STRING,
-                allowNull: false
-            },
-            createdBy: {
+            postId: {
                 type: Sequelize.INTEGER,
                 allowNull: true,
                 references: {
+                    model: 'Audio',
+                    key: 'id'
+                },
+                onDelete: 'CASCADE'
+            },
+            parentReplyId: {
+                type: Sequelize.INTEGER,
+                allowNull: true,
+                references: {
+                    model: 'Replies',
+                    key: 'id'
+                },
+                onDelete: 'CASCADE'
+            },
+            userId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
                     model: 'User',
                     key: 'id'
-                }
+                },
+                onDelete: 'CASCADE'
             },
             createdAt: {
                 allowNull: false,
@@ -39,13 +47,10 @@ module.exports = {
             updatedAt: {
                 allowNull: false,
                 type: Sequelize.DATE
-            },
-            deletedAt: {
-                type: Sequelize.DATE
             }
         })
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('Audio')
+        await queryInterface.dropTable('Replies')
     }
 }

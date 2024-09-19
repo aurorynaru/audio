@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('likeDislikes', {
+        await queryInterface.createTable('LikeDislikes', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -17,7 +17,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'user',
+                    model: 'User',
                     key: 'id'
                 },
                 onDelete: 'CASCADE'
@@ -26,7 +26,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
-                    model: 'audio',
+                    model: 'Audio',
                     key: 'id'
                 },
                 onDelete: 'CASCADE'
@@ -47,6 +47,6 @@ module.exports = {
         // })
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('likeDislikes')
+        await queryInterface.dropTable('LikeDislikes')
     }
 }
