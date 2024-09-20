@@ -12,6 +12,7 @@ import {
 
 import { Link } from '@radix-ui/react-navigation-menu'
 import ListItem from './ListItem'
+import ThemeToggle from './ThemeToggle'
 
 const Navbar = () => {
     return (
@@ -33,6 +34,7 @@ const Navbar = () => {
                             aria-expanded='false'
                             data-state='closed'
                         >
+                            <ThemeToggle />
                             <span class='sr-only'>Toggle theme</span>
                         </button>
                     </nav>
@@ -40,14 +42,14 @@ const Navbar = () => {
                 <div class='mr-4 hidden md:flex'>
                     <nav class='flex items-center gap-4 text-sm lg:gap-6'>
                         <a
-                            class='transition-colors hover:text-foreground/80 text-foreground/60'
-                            href='/docs'
+                            class='transition-colors hover:text-foreground/80 text-foreground'
+                            href='/docs/components'
                         >
                             Log in
                         </a>
                         <a
-                            class='transition-colors hover:text-foreground/80 text-foreground'
-                            href='/docs/components'
+                            class='transition-colors hover:text-foreground/80 text-foreground/60'
+                            href='/docs'
                         >
                             Sign up
                         </a>

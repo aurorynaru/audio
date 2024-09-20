@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
-import { useTheme } from '@/components/ui/Theme-provider'
+import { useTheme } from '@/components/Theme-provider'
 
 const ThemeToggle = () => {
     const { setTheme } = useTheme()
@@ -33,7 +33,7 @@ const ThemeToggle = () => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button
-                    className=''
+                    className='border-none hover:bg-transparent outline-none focus-visible:ring-0 focus-visible:ring-offset-0'
                     // style={{ marginRight: '24px' }}
                     variant='outline'
                     size='icon'
