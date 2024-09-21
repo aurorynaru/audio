@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useTheme } from '@/components/Theme-provider'
 
-const ThemeToggle = () => {
+const ThemeToggle = ({ classname = '', variant = '' }) => {
     const { setTheme } = useTheme()
     const [currentTheme, setCurrentTheme] = useState('')
     setCurrentTheme
@@ -33,9 +33,12 @@ const ThemeToggle = () => {
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button
-                    className='border-none hover:bg-transparent outline-none focus-visible:ring-0 focus-visible:ring-offset-0'
+                    className={
+                        classname +
+                        `border-none hover:bg-transparent outline-none focus-visible:ring-0 focus-visible:ring-offset-0`
+                    }
                     // style={{ marginRight: '24px' }}
-                    variant='outline'
+                    variant={variant}
                     size='icon'
                 >
                     {currentTheme === 'light' ? sun : moon}
