@@ -1,41 +1,22 @@
 import React from 'react'
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
 
-const ModalComponent = () => {
+const ModalComponent = ({ open, Comp, children }) => {
     return (
-        <div>
-            <AlertDialog>
-                <AlertDialogTrigger asChild>
-                    <Button variant='outline'>Show Dialog</Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently
-                            delete your account and remove your data from our
-                            servers.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction>Continue</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
+        <div
+            className={`
+        fixed inset-0 flex justify-center items-center transition-colors
+        ${open ? 'visible bg-black/20' : 'invisible'}
+      `}
+        >
+            <div
+                onClick={(e) => e.stopPropagation()}
+                className={`
+         rounded-xl shadow p-6 transition-all
+          ${open ? 'scale-100 opacity-100' : 'scale-125 opacity-0'}
+        `}
+            >
+                {Comp}
+            </div>
         </div>
     )
 }

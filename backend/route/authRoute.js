@@ -5,7 +5,7 @@ const router = express.Router()
 const fileSizeLimitErrorHandler = require('../middleware/fileSizeLimit')
 const { uploadImage } = require('../utils/multerStorage')
 router.post(
-    '/signup',
+    '/register',
     (req, res, next) => {
         uploadImage.single('image')(req, res, next, (err) => {
             if (err) {

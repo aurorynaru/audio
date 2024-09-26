@@ -8,8 +8,9 @@ const AppError = require('../utils/appError')
 
 const signUp = catchAsync(async (req, res, next) => {
     const profilePicture = req.file.path.split(`\\`)[2]
-    const { email, userName, password, confirmPassword } = req.body
 
+    const { email, userName, password, confirmPassword } = req.body
+    console.log(req.body)
     let bio = req.body.bio
 
     if (bio === undefined) {

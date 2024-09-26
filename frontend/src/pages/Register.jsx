@@ -1,7 +1,15 @@
 import React from 'react'
 
-const Register = () => {
-    return <div></div>
+import ModalComponent from '../myComponents/ModalComponent'
+import ModalCard from '../myComponents/ModalCard'
+
+const Register = ({ showAuth, setShowAuth }) => {
+    return (
+        <ModalComponent
+            Comp={<ModalCard onClose={() => setShowAuth(false)} />}
+            open={showAuth}
+        />
+    )
 }
 
 export default Register
