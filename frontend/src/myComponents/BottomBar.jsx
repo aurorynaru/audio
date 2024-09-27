@@ -1,8 +1,18 @@
 import React, { useState } from 'react'
 import ButtonComponent from './ButtonComponent'
 import ThemeToggle from './ThemeToggle'
+import { useDispatch } from 'react-redux'
+import { setAuthMode } from '../features/user/userSlice'
 
-const BottomBar = ({ isSignedIn, showAuth, handleClick }) => {
+const BottomBar = ({ isSignedIn, showAuth }) => {
+    const dispatch = useDispatch()
+
+    const setRegister = () => {
+        dispatch(setAuthMode('register'))
+    }
+    const setLogin = () => {
+        dispatch(setAuthMode('login'))
+    }
     return (
         <>
             {!isSignedIn && (
@@ -16,12 +26,12 @@ const BottomBar = ({ isSignedIn, showAuth, handleClick }) => {
                             <div className='flex space-x-4'>
                                 <ButtonComponent
                                     className=' rounded-3xl focus:outline-none '
-                                    fn={handleClick}
+                                    fn={setLogin}
                                     value={'Log in'}
                                 />
                                 <ButtonComponent
                                     className='rounded-3xl focus:outline-none  '
-                                    fn={handleClick}
+                                    fn={setRegister}
                                     variant='secondary'
                                     value={'Sign up'}
                                 />

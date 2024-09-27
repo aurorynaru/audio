@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/card'
 
 import { Label } from '@/components/ui/label'
-
 import LabelComponent from './LabelComponent'
 import InputComponent from './InputComponent'
 import TooltipComponent from './TooltipComponent'
@@ -27,7 +26,7 @@ import { useNavigate } from 'react-router-dom'
 import Loading from './Loading'
 import axios from 'axios'
 
-const ModalCard = ({ open, onClose }) => {
+const RegisterComponent = ({ open, onClose }) => {
     const [networkError, setNetworkError] = useState('')
     const [loading, setLoading] = useState(false)
     const [isMatch, setIsMatch] = useState(true)
@@ -344,4 +343,4 @@ const ModalCard = ({ open, onClose }) => {
     )
 }
 
-export default ModalCard
+export default RegisterComponent
