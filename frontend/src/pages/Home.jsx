@@ -10,19 +10,21 @@ import LoginComponent from '../myComponents/LoginComponent'
 const Home = () => {
     const dispatch = useDispatch()
     const { authMode } = useSelector((state) => state.user)
-    const states = useSelector((state) => state.user)
-
-    const [isSignedIn, setIsSignedIn] = useState(false)
+    const { user } = useSelector((state) => state.user)
+    const isAuth = Boolean(useSelector((state) => state.user.token))
 
     const closeModal = () => {
         dispatch(setAuthMode(null))
     }
 
+    console.log(isAuth)
+    console.log(user)
+
     return (
         <div className=' w-screen h-screen flex-col'>
             <div className='flex items-center justify-center '>
                 <div className='flex justify-center items-center mx-2 '>
-                    {!isSignedIn ? <BottomBar isSignedIn={isSignedIn} /> : null}
+                    {!isAuth ? <BottomBar isSignedIn={isAuth} /> : null}
 
                     <ModalComponent
                         Comp={
@@ -32,6 +34,7 @@ const Home = () => {
                                 <LoginComponent onClose={closeModal} />
                             ) : null
                         }
+                        isAuth={isAuth}
                         open={authMode}
                     />
 

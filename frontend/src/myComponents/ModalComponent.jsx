@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ModalComponent = ({ open, Comp, children }) => {
+const ModalComponent = ({ open, Comp, isAuth, children }) => {
     return (
         <div
             className={`

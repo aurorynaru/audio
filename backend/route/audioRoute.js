@@ -1,7 +1,7 @@
 const express = require('express')
 const createAudio = require('../controller/audioController')
 const { uploadFiles } = require('../utils/multerStorage')
-const authentication = require('../middleware/authentication')
+const { authentication } = require('../middleware/authentication')
 const { uploadFilesController } = require('../controller/uploadController')
 const router = express.Router()
 router.post(

@@ -25,15 +25,16 @@ import { api, convertBlobUrlToFile } from '../utils/api'
 import { useNavigate } from 'react-router-dom'
 import Loading from './Loading'
 import axios from 'axios'
+import { useDispatch, useSelector } from 'react-redux'
+import { setLogin } from '../features/user/userSlice'
+import { browser } from 'globals'
 
 const LoginComponent = ({ open, onClose }) => {
     const [networkError, setNetworkError] = useState('')
     const [loading, setLoading] = useState(false)
-    const [isMatch, setIsMatch] = useState(true)
     const [isShowPass, setIsShowPass] = useState(false)
-    const [selectedFile, setSelectedFile] = useState(null)
-    const [previewSrc, setPreviewSrc] = useState(null)
-    const [isCrop, setIsCrop] = useState(false)
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
 
     const {
         register,
@@ -44,8 +45,7 @@ const LoginComponent = ({ open, onClose }) => {
         formState: { errors }
     } = useForm({
         defaultValues: {
-            email: '',
-            userName: '',
+            userCred: '',
             password: ''
         }
     })
@@ -53,64 +53,38 @@ const LoginComponent = ({ open, onClose }) => {
     const onSubmit = async (data) => {
         clearErrors()
         setLoading(true)
-        const { email, userName, password, confirmPassword } = data
-
-        if (password != confirmPassword) {
-            setError('mustMatch', {
-                type: 'required',
-                message: 'Password and confirm password must match.'
-            })
-        }
-
-        const formData = new FormData()
-
-        if (previewSrc) {
-            const img = await convertBlobUrlToFile(
-                previewSrc,
-                selectedFile.name,
-                selectedFile.type
-            )
-            console.log(img)
-            formData.append('image', img)
-        }
-
-        formData.append('email', email)
-        formData.append('userName', userName)
-        formData.append('password', password)
-        formData.append('confirmPassword', confirmPassword)
+        setNetworkError('')
+        const { userCred, password } = data
 
         try {
             const res = await axios.post(
-                'http://localhost:3003/api/auth/register',
-                formData
+                'http://localhost:3003/api/auth/login',
+                { userCred, password },
+                { withCredentials: true }
             )
 
-            if (res.status != 201) {
-                setNetworkError(res.message)
-            }
-            if (res.status === 201) {
-                console.log(res)
+            if (res.status === 200) {
+                dispatch(
+                    setLogin({
+                        user: res.data.user,
+                        token: res.data.token
+                    })
+                )
+
+                localStorage.setItem('token', res.data.token)
+                navigate('/')
             }
         } catch (error) {
-            console.log(error.response.data)
-            setNetworkError(error.message)
+            if (error.response.data.message) {
+                setNetworkError(error.response.data.message)
+            } else {
+                setNetworkError(error.message)
+            }
         } finally {
             setLoading(false)
         }
     }
 
-    const handleFile = (event) => {
-        const file = event.target.files[0]
-        setSelectedFile(file)
-
-        const reader = new FileReader()
-        reader.onloadend = () => {
-            setPreviewSrc(reader.result) // Set the base64 URL for preview
-        }
-        if (file) {
-            reader.readAsDataURL(file) // Read the file as a data URL
-        }
-    }
     return (
         <Card className='w-[450px]'>
             <CardHeader>
@@ -131,41 +105,73 @@ const LoginComponent = ({ open, onClose }) => {
                     <div className='grid w-full items-center gap-6'>
                         <div className='flex flex-col space-y-2.5'>
                             <LabelComponent
-                                label={'email'}
-                                errors={errors.email}
-                                labelValue={'Email'}
+                                label={'userCred'}
+                                errors={errors.userCred}
+                                labelValue={'Email/Username'}
                             />
                             <InputComponent
                                 register={register}
-                                label='email'
-                                errors={errors.email}
-                                labelValue='Email'
+                                label='userCred'
+                                errors={errors.userCred}
+                                labelValue='Email/Username'
                                 errorValue='This is required.'
-                                type='email'
+                                type='text'
                             />
 
-                            {errors.userName && (
+                            {errors.userCred && (
                                 <span className='text-red-500 text-sm'>
-                                    {errors.userName.message}
+                                    {errors.userCred.message}
                                 </span>
                             )}
 
-                            <div className='space-y-2.5 '>
-                                <Label htmlFor='password'>Password</Label>
-                                <InputComponent
-                                    register={register}
-                                    label='password'
-                                    errors={errors.password || errors.mustMatch}
-                                    labelValue='Password'
-                                    errorValue='This is required.'
-                                    minLength={{
-                                        value: 8,
-                                        message:
-                                            'Must be greater than 7 characters'
-                                    }}
-                                    type={isShowPass ? 'text' : 'password'}
-                                    className={`pr-4`}
-                                />
+                            <div className='space-y-2.5'>
+                                <Label htmlFor='password'>
+                                    Confirm Password
+                                </Label>
+                                <div className='flex items-center relative '>
+                                    <InputComponent
+                                        register={register}
+                                        label='password'
+                                        errors={
+                                            errors.password || errors.mustMatch
+                                        }
+                                        labelValue='Confirm password'
+                                        errorValue='This is required.'
+                                        type={isShowPass ? 'text' : 'password'}
+                                        className={'pr-4'}
+                                    />
+
+                                    <div className='right-2 absolute'>
+                                        <TooltipComponent
+                                            Comp={
+                                                isShowPass ? (
+                                                    <RectangleEllipsis
+                                                        onClick={() =>
+                                                            setIsShowPass(
+                                                                !isShowPass
+                                                            )
+                                                        }
+                                                        className='cursor-pointer text-gray-500 hover:text-gray-300'
+                                                    />
+                                                ) : (
+                                                    <Eye
+                                                        onClick={() =>
+                                                            setIsShowPass(
+                                                                !isShowPass
+                                                            )
+                                                        }
+                                                        className='cursor-pointer text-gray-500 hover:text-gray-300'
+                                                    />
+                                                )
+                                            }
+                                            text={
+                                                isShowPass
+                                                    ? 'Hide Password'
+                                                    : 'Show Password'
+                                            }
+                                        />
+                                    </div>
+                                </div>
                                 {errors.password && (
                                     <ErrorComponent
                                         message={errors.password.message}
@@ -176,7 +182,7 @@ const LoginComponent = ({ open, onClose }) => {
                         <div className='flex items-center justify-center'>
                             {networkError && (
                                 <ErrorComponent
-                                    message={`Error creating an account: ${networkError}`}
+                                    message={`Error signing in: ${networkError}`}
                                     className='font-semibold'
                                 />
                             )}

@@ -14,7 +14,12 @@ const audioRoute = require('./route/audioRoute')
 
 const app = express()
 app.use(express.json())
-app.use(cors())
+app.use(
+    cors({
+        origin: 'http://localhost:5173', // FE domain
+        credentials: true
+    })
+)
 app.use(helmet())
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }))
 checkFolder()
