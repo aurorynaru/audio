@@ -7,6 +7,7 @@ import ModalComponent from '../myComponents/ModalComponent'
 import RegisterComponent from '../myComponents/RegisterComponent'
 import LoginComponent from '../myComponents/LoginComponent'
 import { api } from '../utils/api'
+import InfiniteScroll from '../myComponents/InfiniteScroll'
 
 const Home = () => {
     const dispatch = useDispatch()
@@ -41,19 +42,25 @@ const Home = () => {
         <div className=' w-screen h-screen flex-col'>
             <div className='flex items-center justify-center '>
                 <div className='flex justify-center items-center mx-2 '>
-                    {!isAuth ? <BottomBar isSignedIn={isAuth} /> : null}
-
-                    <ModalComponent
-                        Comp={
-                            authMode === 'register' ? (
-                                <RegisterComponent onClose={closeModal} />
-                            ) : authMode === 'login' ? (
-                                <LoginComponent onClose={closeModal} />
-                            ) : null
-                        }
-                        isAuth={isAuth}
-                        open={authMode}
-                    />
+                    <div className='sat'>
+                        <InfiniteScroll />
+                    </div>
+                    <div>
+                        <ModalComponent
+                            Comp={
+                                authMode === 'register' ? (
+                                    <RegisterComponent onClose={closeModal} />
+                                ) : authMode === 'login' ? (
+                                    <LoginComponent onClose={closeModal} />
+                                ) : null
+                            }
+                            isAuth={isAuth}
+                            open={authMode}
+                        />
+                    </div>
+                    <div className='sat'>
+                        {!isAuth ? <BottomBar isSignedIn={isAuth} /> : null}
+                    </div>
                 </div>
             </div>
         </div>

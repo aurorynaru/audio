@@ -47,7 +47,7 @@ const getSignedParams = (key, filename) => {
     } else {
         return {
             Bucket: process.env.BUCKET_NAME_MODEL_IMG,
-            Key: filename
+            Key: `cover/` + filename
         }
     }
 }

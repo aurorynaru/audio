@@ -1,6 +1,6 @@
-import React from 'react'
 import React, { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
+import HomeComponent from './HomeComponent'
 
 const InfiniteScroll = () => {
     const [audios, setAudios] = useState([])
@@ -9,20 +9,19 @@ const InfiniteScroll = () => {
     const observerRef = useRef()
 
     useEffect(() => {
-        // Function to fetch audios from backend
         const fetchAudios = async () => {
             setLoading(true)
             const response = await axios.get(
-                `/api/audios?page=${page}&limit=10`
+                `http://localhost:3003/api/audio/all?page=${page}&limit=2`
             )
-            setAudios((prev) => [...prev, ...response.data])
+
+            setAudios((prev) => [...prev, ...response.data.result])
             setLoading(false)
         }
 
         fetchAudios()
     }, [page])
 
-    // Intersection Observer to load more when reaching the bottom
     useEffect(() => {
         const observer = new IntersectionObserver(
             (entries) => {
@@ -30,7 +29,7 @@ const InfiniteScroll = () => {
                     setPage((prevPage) => prevPage + 1)
                 }
             },
-            { threshold: 1.0 } // trigger when the target is fully in view
+            { threshold: 1 }
         )
 
         if (observerRef.current) {
@@ -44,13 +43,19 @@ const InfiniteScroll = () => {
         }
     }, [loading])
     return (
-        <div>
-            {audios.map((audio) => (
-                <div key={audio.id}>
-                    <h3>{audio.title}</h3>
-                    <p>{audio.duration}</p>
-                </div>
-            ))}
+        <div className='flex flex-col gap-2'>
+            {audios.map((audio) => {
+                const { id, createdBy, audioKey, coverKey } = audio
+                return (
+                    <HomeComponent
+                        key={id}
+                        id={id}
+                        createdBy={createdBy}
+                        audioKey={audioKey}
+                        coverKey={coverKey}
+                    />
+                )
+            })}
 
             <div ref={observerRef}>{loading && <p>Loading more...</p>}</div>
         </div>

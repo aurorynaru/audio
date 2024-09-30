@@ -75,7 +75,7 @@ const getAllAudio = catchAsync(async (req, res, next) => {
         result.map(async (data) => {
             const paramsAudio = getSignedParams('audioKey', data.audioKey)
             const paramsCover = getSignedParams('coverKey', data.coverKey)
-            console.log(paramsAudio)
+
             data.audioKey = await getS3Url(paramsAudio)
             data.coverKey = await getS3Url(paramsCover)
         })
