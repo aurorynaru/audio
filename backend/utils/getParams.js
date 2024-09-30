@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 
 const getParams = (data, img = 'profilePic') => {
+    console.log(data)
     let folderName = ''
 
     if (data.mimetype.startsWith('audio')) {
@@ -37,4 +38,18 @@ const getParams = (data, img = 'profilePic') => {
     return params
 }
 
-module.exports = getParams
+const getSignedParams = (key, filename) => {
+    if (key === 'audioKey') {
+        return {
+            Bucket: process.env.BUCKET_NAME_MODEL,
+            Key: filename
+        }
+    } else {
+        return {
+            Bucket: process.env.BUCKET_NAME_MODEL_IMG,
+            Key: filename
+        }
+    }
+}
+
+module.exports = { getParams, getSignedParams }

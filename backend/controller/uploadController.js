@@ -5,7 +5,7 @@ const { Upload } = require('@aws-sdk/lib-storage')
 const fs = require('fs')
 const path = require('path')
 const s3 = require('../utils/s3Client')
-const getParams = require('../utils/getParams')
+const { getParams } = require('../utils/getParams')
 const AppError = require('../utils/appError')
 const checkFileSize = require('../middleware/fileSize')
 

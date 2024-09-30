@@ -111,4 +111,32 @@ const logIn = catchAsync(async (req, res, next) => {
     return res.status(200).json(userData)
 })
 
-module.exports = { signUp, logIn }
+const refreshToken = catchAsync((req, res, next) => {
+    const refreshToken = req.cookies.refreshToken
+
+    if (!refreshToken) {
+        return next(new AppError('Refresh token required', 403))
+    }
+
+    jwt.verify(refreshToken, process.env.JWT_TOKEN, (err, user) => {
+        if (err) {
+            return next(new AppError('Invalid refresh token', 403))
+        }
+        console.log(user)
+        const accessToken = jwt.sign(
+            { id: user.id },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: '15m' }
+        )
+
+        // const newRefreshToken = jwt.sign({ id }, process.env.JWT_TOKEN, { expiresIn: '7d' });
+        // res.cookie('refreshToken', newRefreshToken, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'Strict' });
+
+        res.json({
+            accessToken,
+            message: 'Access token refreshed'
+        })
+    })
+})
+
+module.exports = { signUp, logIn, refreshToken }

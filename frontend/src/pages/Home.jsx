@@ -6,19 +6,36 @@ import { setAuthMode } from '../features/user/userSlice'
 import ModalComponent from '../myComponents/ModalComponent'
 import RegisterComponent from '../myComponents/RegisterComponent'
 import LoginComponent from '../myComponents/LoginComponent'
+import { api } from '../utils/api'
 
 const Home = () => {
     const dispatch = useDispatch()
+
     const { authMode } = useSelector((state) => state.user)
     const { user } = useSelector((state) => state.user)
-    const isAuth = Boolean(useSelector((state) => state.user.token))
-
+    const isAuth =
+        Boolean(useSelector((state) => state.user.token)) ||
+        Boolean(localStorage.getItem('accessToken'))
+    console.log(useSelector((state) => state.user))
     const closeModal = () => {
         dispatch(setAuthMode(null))
     }
 
     console.log(isAuth)
-    console.log(user)
+    console.log(authMode)
+
+    const getAudio = async () => {
+        try {
+            const res = await api.get('/api/audio/all')
+            console.log(res.data)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    useEffect(() => {
+        getAudio()
+    }, [])
 
     return (
         <div className=' w-screen h-screen flex-col'>
@@ -37,9 +54,6 @@ const Home = () => {
                         isAuth={isAuth}
                         open={authMode}
                     />
-
-                    {/* {<Register showAuth={authMode} closeModal={closeModal} />} */}
-                    {/* {<Login showAuth={authMode} closeModal={closeModal} />} */}
                 </div>
             </div>
         </div>

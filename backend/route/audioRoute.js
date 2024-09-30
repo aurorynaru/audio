@@ -1,5 +1,5 @@
 const express = require('express')
-const createAudio = require('../controller/audioController')
+const { createAudio, getAllAudio } = require('../controller/audioController')
 const { uploadFiles } = require('../utils/multerStorage')
 const { authentication } = require('../middleware/authentication')
 const { uploadFilesController } = require('../controller/uploadController')
@@ -18,5 +18,5 @@ router.post(
     createAudio,
     uploadFilesController
 )
-
+router.get('/all/', getAllAudio)
 module.exports = router
