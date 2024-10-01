@@ -3,12 +3,13 @@ import React, { useState } from 'react'
 import Player from './Player/Player'
 
 const HomeComponent = ({ id, createdBy, audioKey, coverKey }) => {
-    const [isPlaying, setIsPlaying] = useState(false)
+    const [isPlayerPlaying, setIsPlayerPlaying] = useState(false)
+    const [loading, setLoading] = useState(true)
 
     return (
-        <>
-            <div className='flex flex-col justify-center items-center pb-2 gap-2'>
-                <div className='flex flex-col text-center gap-1 w-3/4'></div>
+        <div className='flex flex-col items-center py-6 border-2 border-slate-500/50 rounded-xl'>
+            <div className='flex flex-col justify-center items-center '>
+                <div className='flex flex-col text-center gap-1 w-fit'></div>
 
                 <img
                     src={`${coverKey}`}
@@ -18,35 +19,19 @@ const HomeComponent = ({ id, createdBy, audioKey, coverKey }) => {
                     alt='music cover'
                 />
             </div>
-            <div className='w-full flex items-center justify-evenly'>
-                <>
-                    <span className='text-sm'>{id}</span>
-
-                    <span className='text-sm'>{id}</span>
-                </>
-            </div>
+            <span>{id}</span>
             <div className='flex justify-center items-center w-8/12 py-2'>
-                {/* <SkipBack className='cursor-pointer w-10 h-10' /> */}
-                <div className='flex '>
-                    {/* <Play
-                        className='cursor-pointer w-10 h-10'
-                        // onClick={switchPlayPauseButton}
-                    /> */}
-                    <Player audioUrl={audioKey} />
-                    {/* {isPlaying ? (
-                            <Pause
-                                className='cursor-pointer w-10 h-10'
-                                onClick={switchPlayPauseButton}
-                            />
-                        ) : (
-                            <Play
-                                className='cursor-pointer w-10 h-10'
-                                onClick={switchPlayPauseButton}
-                            />
-                        )} */}
+                <div className='flex w-full  '>
+                    <Player
+                        createdBy={createdBy}
+                        id={id}
+                        audioUrl={audioKey}
+                        isPlayerPlaying={isPlayerPlaying}
+                        setIsPlayerPlaying={setIsPlayerPlaying}
+                    />
                 </div>
             </div>
-        </>
+        </div>
     )
 }
 

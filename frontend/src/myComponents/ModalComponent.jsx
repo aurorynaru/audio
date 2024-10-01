@@ -1,7 +1,6 @@
 import React from 'react'
 
 const ModalComponent = ({ open, Comp, isAuth, children }) => {
-    console.log(open)
     return (
         <div
             className={`

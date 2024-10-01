@@ -22,13 +22,9 @@ const Home = () => {
         dispatch(setAuthMode(null))
     }
 
-    console.log(isAuth)
-    console.log(authMode)
-
     const getAudio = async () => {
         try {
             const res = await api.get('/api/audio/all')
-            console.log(res.data)
         } catch (error) {
             console.log(error)
         }
@@ -39,29 +35,26 @@ const Home = () => {
     }, [])
 
     return (
-        <div className=' w-screen h-screen flex-col'>
-            <div className='flex items-center justify-center '>
-                <div className='flex justify-center items-center mx-2 '>
-                    <div className='sat'>
-                        <InfiniteScroll />
-                    </div>
-                    <div>
-                        <ModalComponent
-                            Comp={
-                                authMode === 'register' ? (
-                                    <RegisterComponent onClose={closeModal} />
-                                ) : authMode === 'login' ? (
-                                    <LoginComponent onClose={closeModal} />
-                                ) : null
-                            }
-                            isAuth={isAuth}
-                            open={authMode}
-                        />
-                    </div>
-                    <div className='sat'>
-                        {!isAuth ? <BottomBar isSignedIn={isAuth} /> : null}
-                    </div>
-                </div>
+        <div className=' relative flex  '>
+            <div className='flex flex-col items-center w-fit '>
+                <InfiniteScroll />
+            </div>
+
+            <div>
+                <ModalComponent
+                    Comp={
+                        authMode === 'register' ? (
+                            <RegisterComponent onClose={closeModal} />
+                        ) : authMode === 'login' ? (
+                            <LoginComponent onClose={closeModal} />
+                        ) : null
+                    }
+                    isAuth={isAuth}
+                    open={authMode}
+                />
+            </div>
+            <div className='sat'>
+                {!isAuth ? <BottomBar isSignedIn={isAuth} /> : null}
             </div>
         </div>
     )
