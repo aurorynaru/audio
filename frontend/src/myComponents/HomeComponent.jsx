@@ -20,16 +20,14 @@ const HomeComponent = ({ id, createdBy, audioKey, coverKey }) => {
                 />
             </div>
             <span>{id}</span>
-            <div className='flex justify-center items-center w-8/12 py-2'>
-                <div className='flex w-full  '>
-                    <Player
-                        createdBy={createdBy}
-                        id={id}
-                        audioUrl={audioKey}
-                        isPlayerPlaying={isPlayerPlaying}
-                        setIsPlayerPlaying={setIsPlayerPlaying}
-                    />
-                </div>
+            <div className='flex justify-center items-center w-full py-2'>
+                <Player
+                    createdBy={createdBy}
+                    id={id}
+                    audioUrl={audioKey}
+                    isPlayerPlaying={isPlayerPlaying}
+                    setIsPlayerPlaying={setIsPlayerPlaying}
+                />
             </div>
         </div>
     )

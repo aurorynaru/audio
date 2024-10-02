@@ -5,8 +5,12 @@ import {
     Pause,
     ArrowBigUp,
     ArrowBigDown,
-    MessageSquareText
+    MessageSquareText,
+    Volume1,
+    Volume2,
+    VolumeOff
 } from 'lucide-react'
+import {} from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Slider } from '@/components/ui/slider'
 import { convertTime, formatTime } from '@/src/utils/functions'
@@ -14,6 +18,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { setPlayer } from '@/src/features/player/playerSlice'
 import { cn } from '@/lib/utils'
 import SliderComponent from '../SliderComponent'
+import TooltipComponent from '../TooltipComponent'
 
 const Player = ({ id, audioUrl, createdBy }) => {
     const dispatch = useDispatch()
@@ -26,20 +31,15 @@ const Player = ({ id, audioUrl, createdBy }) => {
     const [currentTime, setCurrentTime] = useState(0)
     const [loading, setLoading] = useState(true)
     const [isPlaying, setIsPlaying] = useState(false)
-    const [volume, setVolume] = useState(1)
-    // if isPlayerPlaying.id ===id && isPlaying ? !isPlaying
+    const [volume, setVolume] = useState(0.25)
+    const [oldVolume, setOldVolume] = useState(0)
+
     useEffect(() => {
         const audio = audioRef.current
-
-        console.log(audio.volume)
 
         const handleLoadedMetadata = () => {
             setDuration(audio.duration) // Set the duration of the audio
             setLoading(false)
-        }
-
-        const handleVolume = () => {
-            setVolume(1)
         }
 
         const handleTimeUpdate = () => {
@@ -75,6 +75,10 @@ const Player = ({ id, audioUrl, createdBy }) => {
         }
     }, [currentTime])
 
+    useEffect(() => {
+        audioRef.current.volume = volume
+    }, [volume])
+
     const handlePlayPause = () => {
         const audio = audioRef.current
 
@@ -97,20 +101,40 @@ const Player = ({ id, audioUrl, createdBy }) => {
         setIsPlaying(!isPlaying)
     }
 
+    const handleMute = () => {
+        console.log('Sats')
+        if (volume > 0.001) {
+            setOldVolume(volume)
+            setVolume(0)
+        }
+    }
+    const handleOldVolume = () => {
+        console.log('Sats')
+        if (volume < 0.001) {
+            setVolume(oldVolume)
+        }
+    }
+
+    console.log(volume)
+
     return (
         <>
             <div className='hidden'>
                 <audio ref={audioRef} src={audioUrl} />
             </div>
 
-            <div className='flex flex-col items-center w-full gap-2'>
-                <div className='hidden'>
-                    <div className='flex justify-between items-center w-full py-1'>
-                        <div className='flex '>
-                            <span>1</span>
-                            <ArrowBigUp className='cursor-pointer w-7 h-7' />
-                            <ArrowBigDown className='cursor-pointer w-7 h-7' />
-                            <span>2</span>
+            <div className='flex justify-evenly items-center w-full'>
+                <div className='flex flex-col gap-5  w-10/12 '>
+                    <div className='  flex justify-evenly items-center gap-4 w-full py-1'>
+                        <div className='flex gap-2'>
+                            <div className='flex'>
+                                <span>1</span>
+                                <ArrowBigUp className='cursor-pointer w-7 h-7' />
+                            </div>
+                            <div className='flex'>
+                                <ArrowBigDown className='cursor-pointer w-7 h-7' />
+                                <span>2</span>
+                            </div>
                         </div>
                         <div className='mr-10'>
                             {isPlaying ? (
@@ -159,8 +183,38 @@ const Player = ({ id, audioUrl, createdBy }) => {
                         )}
                     </div>
                 </div>
-                <div className='bg-yellow-300'>
-                    <SliderComponent />
+                <div className='h-fit flex flex-col gap-2'>
+                    <SliderComponent
+                        max={100}
+                        sliderVal={[volume]}
+                        setVolumeFn={setVolume}
+                    />
+                    {volume < 0.65 && volume > 0.001 ? (
+                        <Volume1
+                            className='h-6 w-6 cursor-pointer'
+                            onClick={() => handleMute}
+                        />
+                    ) : volume >= 0.65 ? (
+                        <Volume2
+                            className='h-6 w-6 cursor-pointer'
+                            onClick={() => handleMute}
+                        />
+                    ) : (
+                        <VolumeOff
+                            className='h-6 w-6 cursor-pointer  '
+                            onClick={() => handleOldVolume}
+                        />
+                    )}
+                    {/* <TooltipComponent
+                        Comp={
+                            <SliderComponent
+                                max={100}
+                                step={0.5}
+                                defaultValue={[25]}
+                            />
+                        }
+                        text={'yo'}
+                    /> */}
                 </div>
             </div>
         </>

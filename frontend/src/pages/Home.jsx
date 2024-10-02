@@ -8,6 +8,7 @@ import RegisterComponent from '../myComponents/RegisterComponent'
 import LoginComponent from '../myComponents/LoginComponent'
 import { api } from '../utils/api'
 import InfiniteScroll from '../myComponents/InfiniteScroll'
+import { Volume } from 'lucide-react'
 
 const Home = () => {
     const dispatch = useDispatch()
