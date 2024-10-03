@@ -1,9 +1,10 @@
 const express = require('express')
-const { signUp, logIn, refreshToken } = require('../controller/authController')
+const { signUp, logIn } = require('../controller/authController')
 const { uploadAvatar } = require('../controller/uploadController')
 const router = express.Router()
 const fileSizeLimitErrorHandler = require('../middleware/fileSizeLimit')
 const { uploadImage } = require('../utils/multerStorage')
+const { refreshTokenFn } = require('../middleware/authentication')
 router.post(
     '/register',
     (req, res, next) => {
@@ -19,6 +20,6 @@ router.post(
 )
 router.post('/login', logIn)
 
-router.post('refresh', refreshToken)
+router.post('refresh', refreshTokenFn)
 
 module.exports = router

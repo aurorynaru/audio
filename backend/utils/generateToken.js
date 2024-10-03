@@ -1,7 +1,10 @@
 require('dotenv').config({ path: `${process.cwd}/.env` })
-const NodeCache = require('node-cache')
-const tokenCache = new NodeCache({ stdTTL: 7 * 24 * 60 * 60 })
 const jwt = require('jsonwebtoken')
+const NodeCache = require('node-cache')
+let tokenCache = null
+if (!tokenCache) {
+    tokenCache = new NodeCache({ stdTTL: 7 * 24 * 60 * 60 })
+}
 
 const generateToken = (payload) => {
     return jwt.sign(payload, process.env.JWT_TOKEN, {
@@ -18,4 +21,13 @@ const generateRefreshToken = (payload) => {
     return refreshToken
 }
 
-module.exports = { generateToken, generateRefreshToken, tokenCache }
+const deleteToken = (payload) => {
+    tokenCache.del(payload.id)
+}
+
+module.exports = {
+    generateToken,
+    generateRefreshToken,
+    deleteToken,
+    tokenCache
+}

@@ -1,12 +1,14 @@
 const { GetObjectCommand } = require('@aws-sdk/client-s3')
 const audio = require('../models/audio')
 const user = require('../models/user')
+const likeDislikes = require('../models/likedislike')
 const AppError = require('../utils/appError')
 const catchAsync = require('../utils/catchAsync')
 const getSignedUrl = require('@aws-sdk/s3-request-presigner')
 const s3 = require('../utils/s3Client')
 const getS3Url = require('../utils/getS3Url')
 const { getParams, getSignedParams } = require('../utils/getParams')
+const jwt = require('jsonwebtoken')
 
 const createAudio = catchAsync(async (req, res, next) => {
     const userId = req.user.id
@@ -51,10 +53,10 @@ const createAudio = catchAsync(async (req, res, next) => {
 
     next()
 })
-
 const getAllAudio = catchAsync(async (req, res, next) => {
     const { page = 1, limit = 10 } = req.query
-    const result = await audio.findAll({
+
+    const audioResult = await audio.findAll({
         attributes: [
             'id',
             'title',
@@ -64,20 +66,66 @@ const getAllAudio = catchAsync(async (req, res, next) => {
             'createdBy',
             'createdAt'
         ],
-        include: {
-            model: user,
-            attributes: ['id']
-        },
+        include: [
+            {
+                model: user,
+                attributes: ['id']
+            }
+        ],
         limit: parseInt(limit), // limit the number of items
         offset: (page - 1) * limit // skip previous items
     })
-    await Promise.all(
-        result.map(async (data) => {
-            const paramsAudio = getSignedParams('audioKey', data.audioKey)
-            const paramsCover = getSignedParams('coverKey', data.coverKey)
 
-            data.audioKey = await getS3Url(paramsAudio)
-            data.coverKey = await getS3Url(paramsCover)
+    let idToken = ''
+    let userId = null
+
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        idToken = req.headers.authorization.split(' ')[1]
+        const tokenDetail = jwt.verify(idToken, process.env.JWT_TOKEN)
+        userId = tokenDetail.id
+    }
+
+    const result = await Promise.all(
+        audioResult.map(async (data) => {
+            const jsonData = data.toJSON()
+
+            const paramsAudio = getSignedParams('audioKey', jsonData.audioKey)
+            const paramsCover = getSignedParams('coverKey', jsonData.coverKey)
+
+            jsonData.audioKey = await getS3Url(paramsAudio)
+            jsonData.coverKey = await getS3Url(paramsCover)
+
+            const likesCount = await likeDislikes.count({
+                where: { postId: jsonData.id, isLike: true }
+            })
+            const disLikesCount = await likeDislikes.count({
+                where: { postId: jsonData.id, isLike: false }
+            })
+            if (userId != null) {
+                const userInteraction = await likeDislikes.findOne({
+                    where: { userId, postId: jsonData.id }
+                })
+
+                if (userInteraction) {
+                    // If user has liked or disliked, store the value in jsonData
+                    jsonData.isUserLikedDislike = userInteraction.isLike
+                        ? 'liked'
+                        : 'disliked'
+                } else {
+                    // If user has not interacted, mark as 'none'
+                    jsonData.isUserLikedDislike = 'none'
+                }
+            } else {
+                // If there's no user (not authenticated), mark as 'none'
+                jsonData.isUserLikedDislike = 'none'
+            }
+            jsonData.likes = likesCount
+            jsonData.dislikes = disLikesCount
+
+            return jsonData
         })
     )
 

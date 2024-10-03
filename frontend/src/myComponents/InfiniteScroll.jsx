@@ -17,7 +17,7 @@ const InfiniteScroll = () => {
             const response = await axios.get(
                 `http://localhost:3003/api/audio/all?page=${page}&limit=4`
             )
-
+            console.log(response.data)
             if (response.data.result.length <= 0) {
                 setIsEmpty(true)
             } else {
@@ -55,9 +55,23 @@ const InfiniteScroll = () => {
         <>
             <div className='flex flex-col w-5/12 items-center gap-4 '>
                 {audios.map((audio) => {
-                    const { id, createdBy, audioKey, coverKey } = audio
+                    const {
+                        id,
+                        createdBy,
+                        audioKey,
+                        coverKey,
+                        title,
+                        isUserLikedDislike,
+                        likes,
+                        dislikes
+                    } = audio
+
                     return (
                         <HomeComponent
+                            isUserLikedDislike={isUserLikedDislike}
+                            likes={likes}
+                            dislikes={dislikes}
+                            title={title}
                             key={id}
                             id={id}
                             createdBy={createdBy}

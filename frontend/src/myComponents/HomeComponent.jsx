@@ -2,7 +2,16 @@ import React, { useState } from 'react'
 
 import Player from './Player/Player'
 
-const HomeComponent = ({ id, createdBy, audioKey, coverKey }) => {
+const HomeComponent = ({
+    title,
+    isUserLikedDislike,
+    likes,
+    dislikes,
+    id,
+    createdBy,
+    audioKey,
+    coverKey
+}) => {
     const [isPlayerPlaying, setIsPlayerPlaying] = useState(false)
     const [loading, setLoading] = useState(true)
 
@@ -19,9 +28,12 @@ const HomeComponent = ({ id, createdBy, audioKey, coverKey }) => {
                     alt='music cover'
                 />
             </div>
-            <span>{id}</span>
+            <span>{title}</span>
             <div className='flex justify-center items-center w-full py-2'>
                 <Player
+                    isUserLikedDislike={isUserLikedDislike}
+                    likes={likes}
+                    dislikes={dislikes}
                     createdBy={createdBy}
                     id={id}
                     audioUrl={audioKey}

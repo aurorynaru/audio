@@ -10,13 +10,19 @@ const Slider = React.forwardRef(({ className, ...props }, ref) => {
     const [value, setValue] = React.useState(props.sliderVal * 100)
 
     React.useEffect(() => {
-        if (props.sliderVal <= 0.01 && props.sliderVal > 0) {
-            handleValueChange(0.001)
+        if (props.sliderVal <= 0) {
+            handleValueChange(0)
+        }
+
+        if (value[0] != undefined) {
+            if (value[0] <= 0) {
+                setValue(props.sliderVal[0] * 100)
+            }
         }
     }, [props.sliderVal])
 
     const handleValueChange = (newValue) => {
-        if (value <= 0.0001) {
+        if (newValue <= 0) {
             props.setVolumeFn(0)
             setValue([0])
         } else {

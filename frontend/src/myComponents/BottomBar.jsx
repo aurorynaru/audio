@@ -17,7 +17,7 @@ const BottomBar = ({ isSignedIn, showAuth }) => {
         <>
             {!isSignedIn && (
                 <>
-                    <div className='fixed bottom-0 left-0 w-full p-4 border-t '>
+                    <div className='fixed bottom-0 left-0 w-full p-4 border-t bg-slate-800 opacity-90 '>
                         <div className='container mx-auto flex justify-between items-center'>
                             <div className='text-lg flex justify-center items-center'>
                                 Log in or sign up dfbsadfasdlhalsdkgvh

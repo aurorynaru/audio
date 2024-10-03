@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect } from 'react'
-
 import {
     Play,
     Pause,
@@ -10,17 +9,23 @@ import {
     Volume2,
     VolumeOff
 } from 'lucide-react'
-import {} from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Slider } from '@/components/ui/slider'
-import { convertTime, formatTime } from '@/src/utils/functions'
+import { formatTime } from '@/src/utils/functions'
 import { useDispatch, useSelector } from 'react-redux'
 import { setPlayer } from '@/src/features/player/playerSlice'
-import { cn } from '@/lib/utils'
-import SliderComponent from '../SliderComponent'
-import TooltipComponent from '../TooltipComponent'
 
-const Player = ({ id, audioUrl, createdBy }) => {
+import SliderComponent from '../SliderComponent'
+import { api } from '@/src/utils/api'
+
+const Player = ({
+    id,
+    audioUrl,
+    title,
+    isUserLikedDislike,
+    likes,
+    dislikes,
+    createdBy
+}) => {
     const dispatch = useDispatch()
     const { isPlayerPlaying, playerId } = useSelector((state) => state.player)
 
@@ -79,6 +84,22 @@ const Player = ({ id, audioUrl, createdBy }) => {
         audioRef.current.volume = volume
     }, [volume])
 
+    const likeDislike = async () => {
+        try {
+            const res = await api.post(
+                'api/audio/likeDislike',
+                {
+                    postId: id,
+                    isLike: isUserLikedDislike === 'liked' ? false : true
+                },
+                { withCredentials: true }
+            )
+            console.log(res)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
     const handlePlayPause = () => {
         const audio = audioRef.current
 
@@ -102,20 +123,16 @@ const Player = ({ id, audioUrl, createdBy }) => {
     }
 
     const handleMute = () => {
-        console.log('Sats')
-        if (volume > 0.001) {
+        if (volume > 0) {
             setOldVolume(volume)
             setVolume(0)
         }
     }
     const handleOldVolume = () => {
-        console.log('Sats')
-        if (volume < 0.001) {
-            setVolume(oldVolume)
+        if (volume <= 0) {
+            setVolume(oldVolume || 0.25)
         }
     }
-
-    console.log(volume)
 
     return (
         <>
@@ -128,12 +145,18 @@ const Player = ({ id, audioUrl, createdBy }) => {
                     <div className='  flex justify-evenly items-center gap-4 w-full py-1'>
                         <div className='flex gap-2'>
                             <div className='flex'>
-                                <span>1</span>
-                                <ArrowBigUp className='cursor-pointer w-7 h-7' />
+                                <span>{likes}</span>
+                                <ArrowBigUp
+                                    onClick={likeDislike}
+                                    className='cursor-pointer w-7 h-7'
+                                />
                             </div>
                             <div className='flex'>
-                                <ArrowBigDown className='cursor-pointer w-7 h-7' />
-                                <span>2</span>
+                                <ArrowBigDown
+                                    onClick={likeDislike}
+                                    className='cursor-pointer w-7 h-7'
+                                />
+                                <span>{dislikes}</span>
                             </div>
                         </div>
                         <div className='mr-10'>
@@ -192,17 +215,17 @@ const Player = ({ id, audioUrl, createdBy }) => {
                     {volume < 0.65 && volume > 0.001 ? (
                         <Volume1
                             className='h-6 w-6 cursor-pointer'
-                            onClick={() => handleMute}
+                            onClick={() => handleMute()}
                         />
                     ) : volume >= 0.65 ? (
                         <Volume2
                             className='h-6 w-6 cursor-pointer'
-                            onClick={() => handleMute}
+                            onClick={() => handleMute()}
                         />
                     ) : (
                         <VolumeOff
                             className='h-6 w-6 cursor-pointer  '
-                            onClick={() => handleOldVolume}
+                            onClick={() => handleOldVolume()}
                         />
                     )}
                     {/* <TooltipComponent

@@ -1,6 +1,7 @@
 'use strict'
 const { Model, DataTypes } = require('sequelize')
 const sequelize = require('../config/database')
+
 const audio = sequelize.define(
     'Audio',
     {

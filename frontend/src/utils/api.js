@@ -38,7 +38,7 @@ api.interceptors.response.use(
                 )
 
                 const newAccessToken = response.data.accessToken
-
+                console.log(newAccessToken)
                 localStorage.setItem('accessToken', newAccessToken)
 
                 originalRequest.headers[
@@ -48,7 +48,7 @@ api.interceptors.response.use(
                 return api(originalRequest)
             } catch (refreshError) {
                 console.log('Refresh token expired or invalid', refreshError)
-                // Optionally redirect to login or handle session expiration
+
                 return Promise.reject(refreshError)
             }
         }

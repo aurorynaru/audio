@@ -34,7 +34,7 @@ const Home = () => {
     useEffect(() => {
         getAudio()
     }, [])
-
+    console.log(isAuth)
     return (
         <div className=' relative flex  '>
             <div className='flex flex-col items-center w-fit '>
