@@ -138,4 +138,18 @@ const getAllAudio = catchAsync(async (req, res, next) => {
     })
 })
 
-module.exports = { createAudio, getAllAudio }
+const getAudio = catchAsync(async (req, res, next) => {
+    const { postId } = req.query
+
+    const audioResult = await audio.findByPk(postId)
+
+    if (!audioResult) {
+        return next(new AppError('invalid postId', 400))
+    }
+
+    res.status(200).json({
+        audioResult
+    })
+})
+
+module.exports = { createAudio, getAllAudio, getAudio }

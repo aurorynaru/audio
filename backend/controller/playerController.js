@@ -36,7 +36,7 @@ const LikeDislike = catchAsync(async (req, res, next) => {
     if (!audioPost) {
         return next(new AppError('Invalid post', 401))
     }
-
+    // check if there is already a likedislike data from
     const checkLd = await likeDislikes.findOne({
         where: { userId: loginUser.id }
     })
@@ -53,17 +53,52 @@ const LikeDislike = catchAsync(async (req, res, next) => {
             uLd
         })
     } else {
-        const uLd = await likeDislikes.update(
-            { isLike: !checkLd.isLike },
-            {
-                where: { id: postId }
-            }
-        )
+        if (checkLd.isLike === isLike) {
+            await likeDislikes.destroy({
+                where: { id: checkLd.id }
+            })
+        } else {
+            await likeDislikes.update(
+                { isLike: !checkLd.isLike },
+                {
+                    where: { id: postId }
+                }
+            )
+        }
 
         const data = await likeDislikes.findByPk(postId)
 
+        const userInteraction = await likeDislikes.findOne({
+            where: { userId, postId: loginUser.id }
+        })
+
+        let isUserLikedDislike = ''
+
+        if (userInteraction) {
+            isUserLikedDislike = userInteraction.isLike ? 'liked' : 'disliked'
+        } else {
+            isUserLikedDislike = isUserLikedDislike.isUserLikedDislike = 'none'
+        }
+
+        //add likes and dislikes amount
+        const likesCount = await likeDislikes.count({
+            where: { postId: postId, isLike: true }
+        })
+        const disLikesCount = await likeDislikes.count({
+            where: { postId: postId, isLike: false }
+        })
+
+        if (data) {
+            const interactionData = data.toJSON()
+
+            interactionData.isUserLikedDislike = isUserLikedDislike
+            interactionData.likes = likesCount
+            interactionData.dislikes = disLikesCount
+        } else {
+        }
+
         return res.status(200).json({
-            data
+            interactionData
         })
     }
 

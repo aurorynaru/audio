@@ -1,5 +1,9 @@
 const express = require('express')
-const { createAudio, getAllAudio } = require('../controller/audioController')
+const {
+    createAudio,
+    getAllAudio,
+    getAudio
+} = require('../controller/audioController')
 const { uploadFiles } = require('../utils/multerStorage')
 const {
     authentication,
@@ -23,6 +27,8 @@ router.post(
     uploadFilesController
 )
 router.get('/all/', getAllAudio)
+
+router.get('/get/', getAudio)
 
 router.post('/likeDislike', authentication, LikeDislike)
 

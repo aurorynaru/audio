@@ -16,6 +16,7 @@ import { setPlayer } from '@/src/features/player/playerSlice'
 
 import SliderComponent from '../SliderComponent'
 import { api } from '@/src/utils/api'
+import { updateLikeDislike } from '@/src/features/audio/audioSlice'
 
 const Player = ({
     id,
@@ -84,17 +85,28 @@ const Player = ({
         audioRef.current.volume = volume
     }, [volume])
 
-    const likeDislike = async () => {
+    const likeDislike = async (data) => {
         try {
             const res = await api.post(
                 'api/audio/likeDislike',
                 {
                     postId: id,
-                    isLike: isUserLikedDislike === 'liked' ? false : true
+                    isLike: data
                 },
                 { withCredentials: true }
             )
             console.log(res)
+            if (res.status === 200) {
+                const updatedPost = {
+                    id: res.data.interactionData.postId,
+                    likes: res.data.interactionData.likes,
+                    dislikes: res.data.interactionData.dislikes,
+                    isUserLikedDislike:
+                        res.data.interactionData.isUserLikedDislike
+                }
+
+                dispatch(updateLikeDislike(updatedPost))
+            }
         } catch (error) {
             console.log(error)
         }
@@ -147,14 +159,22 @@ const Player = ({
                             <div className='flex'>
                                 <span>{likes}</span>
                                 <ArrowBigUp
-                                    onClick={likeDislike}
-                                    className='cursor-pointer w-7 h-7'
+                                    onClick={() => likeDislike(true)}
+                                    className={`cursor-pointer w-7 h-7 ${
+                                        isUserLikedDislike === 'liked'
+                                            ? 'text-orange-300 '
+                                            : ''
+                                    }`}
                                 />
                             </div>
                             <div className='flex'>
                                 <ArrowBigDown
-                                    onClick={likeDislike}
-                                    className='cursor-pointer w-7 h-7'
+                                    onClick={() => likeDislike(false)}
+                                    className={`cursor-pointer w-7 h-7 ${
+                                        isUserLikedDislike === 'disliked'
+                                            ? 'text-orange-300 '
+                                            : ''
+                                    }`}
                                 />
                                 <span>{dislikes}</span>
                             </div>

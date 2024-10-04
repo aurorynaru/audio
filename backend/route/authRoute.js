@@ -20,6 +20,6 @@ router.post(
 )
 router.post('/login', logIn)
 
-router.post('refresh', refreshTokenFn)
+router.post('/refresh', refreshTokenFn)
 
 module.exports = router

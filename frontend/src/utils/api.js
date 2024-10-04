@@ -38,22 +38,20 @@ api.interceptors.response.use(
                 )
 
                 const newAccessToken = response.data.accessToken
-                console.log(newAccessToken)
+
                 localStorage.setItem('accessToken', newAccessToken)
 
                 originalRequest.headers[
                     'Authorization'
                 ] = `Bearer ${newAccessToken}`
-
                 return api(originalRequest)
             } catch (refreshError) {
                 console.log('Refresh token expired or invalid', refreshError)
-
                 return Promise.reject(refreshError)
             }
         }
-
-        return Promise.reject(error)
+        //localhost:3003/api/auth/refresh
+        http: return Promise.reject(error)
     }
 )
 

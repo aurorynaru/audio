@@ -18,23 +18,10 @@ const Home = () => {
     const isAuth =
         Boolean(useSelector((state) => state.user.token)) ||
         Boolean(localStorage.getItem('accessToken'))
-    console.log(useSelector((state) => state.user))
     const closeModal = () => {
         dispatch(setAuthMode(null))
     }
 
-    const getAudio = async () => {
-        try {
-            const res = await api.get('/api/audio/all')
-        } catch (error) {
-            console.log(error)
-        }
-    }
-
-    useEffect(() => {
-        getAudio()
-    }, [])
-    console.log(isAuth)
     return (
         <div className=' relative flex  '>
             <div className='flex flex-col items-center w-fit '>
