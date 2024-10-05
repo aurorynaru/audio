@@ -1,2 +1,11 @@
 # Auto detect text files and perform LF normalization
+# Force LF for text files
 * text=auto
+*.js text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+
+# Treat binary files as-is (no conversion)
+*.png binary
+*.jpg binary

@@ -55,7 +55,7 @@ const InfiniteScroll = () => {
             }
         }
     }, [loading])
-    console.log(audios)
+
     return (
         <>
             <div className='flex flex-col w-5/12 items-center'>

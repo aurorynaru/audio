@@ -9,18 +9,29 @@ import LoginComponent from '../myComponents/LoginComponent'
 import { api } from '../utils/api'
 import InfiniteScroll from '../myComponents/InfiniteScroll'
 import { Volume } from 'lucide-react'
+import LoginExpired from './LoginExpired'
 
 const Home = () => {
     const dispatch = useDispatch()
 
     const { authMode } = useSelector((state) => state.user)
+
     const { user } = useSelector((state) => state.user)
+    const { SessionExpired } = useSelector((state) => state.user)
     const isAuth =
         Boolean(useSelector((state) => state.user.token)) ||
         Boolean(localStorage.getItem('accessToken'))
+
     const closeModal = () => {
-        dispatch(setAuthMode(null))
+        dispatch(
+            setAuthMode({
+                register: false,
+                login: false,
+                close: true
+            })
+        )
     }
+    console.log(isAuth)
 
     return (
         <div className=' relative flex  '>
@@ -31,9 +42,9 @@ const Home = () => {
             <div>
                 <ModalComponent
                     Comp={
-                        authMode === 'register' ? (
+                        authMode.register && !authMode.close ? (
                             <RegisterComponent onClose={closeModal} />
-                        ) : authMode === 'login' ? (
+                        ) : authMode.login && !authMode.close ? (
                             <LoginComponent onClose={closeModal} />
                         ) : null
                     }
