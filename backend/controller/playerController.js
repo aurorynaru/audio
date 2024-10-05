@@ -7,7 +7,6 @@ const jwt = require('jsonwebtoken')
 
 const LikeDislike = catchAsync(async (req, res, next) => {
     const { postId, isLike } = req.body
-    console.log(req.body)
 
     let idToken = ''
 
@@ -38,19 +37,16 @@ const LikeDislike = catchAsync(async (req, res, next) => {
     }
     // check if there is already a likedislike data from
     const checkLd = await likeDislikes.findOne({
-        where: { userId: loginUser.id }
+        where: { userId: loginUser.id, postId: audioPost.id }
     })
 
+    console.log('hengs?', checkLd)
+
     if (!checkLd) {
-        const uLd = await likeDislikes.create({
+        await likeDislikes.create({
             isLike,
             userId,
             postId
-        })
-
-        return res.status(401).json({
-            message: 'not liked yet',
-            uLd
         })
     } else {
         if (checkLd.isLike === isLike) {
@@ -61,46 +57,51 @@ const LikeDislike = catchAsync(async (req, res, next) => {
             await likeDislikes.update(
                 { isLike: !checkLd.isLike },
                 {
-                    where: { id: postId }
+                    where: { id: checkLd.id }
                 }
             )
         }
-
-        const data = await likeDislikes.findByPk(postId)
-
-        const userInteraction = await likeDislikes.findOne({
-            where: { userId, postId: loginUser.id }
-        })
-
-        let isUserLikedDislike = ''
-
-        if (userInteraction) {
-            isUserLikedDislike = userInteraction.isLike ? 'liked' : 'disliked'
-        } else {
-            isUserLikedDislike = isUserLikedDislike.isUserLikedDislike = 'none'
-        }
-
-        //add likes and dislikes amount
-        const likesCount = await likeDislikes.count({
-            where: { postId: postId, isLike: true }
-        })
-        const disLikesCount = await likeDislikes.count({
-            where: { postId: postId, isLike: false }
-        })
-
-        if (data) {
-            const interactionData = data.toJSON()
-
-            interactionData.isUserLikedDislike = isUserLikedDislike
-            interactionData.likes = likesCount
-            interactionData.dislikes = disLikesCount
-        } else {
-        }
-
-        return res.status(200).json({
-            interactionData
-        })
     }
+
+    const data = await likeDislikes.findByPk(postId)
+
+    const userInteraction = await likeDislikes.findOne({
+        where: { userId, postId: loginUser.id }
+    })
+
+    let isUserLikedDislike = ''
+
+    if (userInteraction) {
+        isUserLikedDislike = userInteraction.isLike ? 'liked' : 'disliked'
+    } else {
+        isUserLikedDislike = isUserLikedDislike.isUserLikedDislike = 'none'
+    }
+
+    const likesCount = await likeDislikes.count({
+        where: { postId: postId, isLike: true }
+    })
+    const disLikesCount = await likeDislikes.count({
+        where: { postId: postId, isLike: false }
+    })
+
+    let interactionData = {}
+
+    if (data) {
+        interactionData = data.toJSON()
+
+        interactionData.isUserLikedDislike = isUserLikedDislike
+        interactionData.likes = likesCount
+        interactionData.dislikes = disLikesCount
+    } else {
+        interactionData.isUserLikedDislike = isUserLikedDislike
+        interactionData.likes = likesCount
+        interactionData.dislikes = disLikesCount
+        interactionData.postId = postId
+    }
+
+    return res.status(200).json({
+        interactionData
+    })
 
     // const ld = await likeDislikes.create({
     //     isLike,

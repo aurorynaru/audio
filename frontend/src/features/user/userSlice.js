@@ -3,7 +3,12 @@ const initialState = {
     mode: 'dark',
     user: null,
     token: null,
-    authMode: null
+    authMode: {
+        login: false,
+        register: false,
+        close: true
+    },
+    SessionExpired: false
 }
 
 const userSlice = createSlice({
@@ -19,11 +24,16 @@ const userSlice = createSlice({
         },
         setAuthMode: (state, action) => {
             state.authMode = action.payload
+        },
+
+        setSessionExpired: (state, action) => {
+            state.SessionExpired = action.payload
         }
     }
 })
 
 // Action creators are generated for each case reducer function
-export const { setMode, setLogin, setAuthMode } = userSlice.actions
+export const { setMode, setLogin, setAuthMode, setSessionExpired } =
+    userSlice.actions
 
 export default userSlice.reducer

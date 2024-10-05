@@ -17,6 +17,7 @@ import { setPlayer } from '@/src/features/player/playerSlice'
 import SliderComponent from '../SliderComponent'
 import { api } from '@/src/utils/api'
 import { updateLikeDislike } from '@/src/features/audio/audioSlice'
+import { setSessionExpired } from '@/src/features/user/userSlice'
 
 const Player = ({
     id,
@@ -108,6 +109,21 @@ const Player = ({
                 dispatch(updateLikeDislike(updatedPost))
             }
         } catch (error) {
+            if (
+                error.response.data.message === 'invalid refresh token' &&
+                error.status === 401
+            ) {
+                dispatch(setSessionExpired(true))
+                dispatch(
+                    setAuthMode({
+                        login: true,
+                        register: false,
+                        close: false
+                    })
+                )
+
+                localStorage.removeItem('accessToken')
+            }
             console.log(error)
         }
     }

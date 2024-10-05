@@ -8,10 +8,22 @@ const BottomBar = ({ isSignedIn, showAuth }) => {
     const dispatch = useDispatch()
 
     const setRegister = () => {
-        dispatch(setAuthMode('register'))
+        dispatch(
+            setAuthMode({
+                login: false,
+                register: true,
+                close: false
+            })
+        )
     }
     const setLogin = () => {
-        dispatch(setAuthMode('login'))
+        dispatch(
+            setAuthMode({
+                login: true,
+                register: false,
+                close: false
+            })
+        )
     }
     return (
         <>

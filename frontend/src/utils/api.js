@@ -47,6 +47,7 @@ api.interceptors.response.use(
                 return api(originalRequest)
             } catch (refreshError) {
                 console.log('Refresh token expired or invalid', refreshError)
+
                 return Promise.reject(refreshError)
             }
         }
