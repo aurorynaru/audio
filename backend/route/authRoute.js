@@ -1,5 +1,5 @@
 const express = require('express')
-const { signUp, logIn } = require('../controller/authController')
+const { signUp, logIn, getUser } = require('../controller/authController')
 const { uploadAvatar } = require('../controller/uploadController')
 const router = express.Router()
 const fileSizeLimitErrorHandler = require('../middleware/fileSizeLimit')
@@ -19,6 +19,8 @@ router.post(
     uploadAvatar
 )
 router.post('/login', logIn)
+
+router.get('/get-user', getUser)
 
 router.post('/refresh', refreshTokenFn)
 

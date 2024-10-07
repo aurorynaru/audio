@@ -14,8 +14,7 @@ const InfiniteScroll = () => {
     const [isEmpty, setIsEmpty] = useState(false)
     const dispatch = useDispatch()
     const { audios } = useSelector((state) => state.audio)
-    const { token } = useSelector((state) => state.user)
-    console.log(useSelector((state) => state.user))
+    const { token, user } = useSelector((state) => state.user)
 
     useEffect(() => {
         const fetchAudios = async () => {
@@ -85,14 +84,12 @@ const InfiniteScroll = () => {
                         dislikes
                     } = audio
 
-                    console.log(isUserLikedDislike)
-
                     return (
                         <div
                             key={id}
-                            className='flex items-center py-6 border-2 border-slate-500/50 rounded-xl'
+                            className='flex items-center py-6 border-2 border-slate-500/50 rounded-xl gap-2 px-4 '
                         >
-                            <div className='sat'>
+                            <div className='w-1/2'>
                                 <div className='flex flex-col justify-center items-center '>
                                     <div className='flex flex-col text-center gap-1 w-fit'></div>
 
@@ -118,7 +115,11 @@ const InfiniteScroll = () => {
                                     />
                                 </div>
                             </div>
-                            <Comments />
+                            <div className='w-1/2 border-2  h-64'>
+                                <div className='comment p-1'>
+                                    <Comments user={user} />
+                                </div>
+                            </div>
                         </div>
                     )
                 })}
