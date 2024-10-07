@@ -5,21 +5,35 @@ import { useDebounce } from '../utils/debounce'
 import { useDispatch, useSelector } from 'react-redux'
 import { setAudio } from '../features/audio/audioSlice'
 import Player from './Player/Player'
+import Comments from '../pages/Comments'
 
 const InfiniteScroll = () => {
+    const observerRef = useRef()
     const [page, setPage] = useState(1)
     const [loading, setLoading] = useState(false)
     const [isEmpty, setIsEmpty] = useState(false)
     const dispatch = useDispatch()
-    const observerRef = useRef()
     const { audios } = useSelector((state) => state.audio)
+    const { token } = useSelector((state) => state.user)
+    console.log(useSelector((state) => state.user))
 
     useEffect(() => {
         const fetchAudios = async () => {
+            const config = {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+            const response = token
+                ? await axios.get(
+                      `http://localhost:3003/api/audio/all?page=${page}&limit=4`,
+                      config
+                  )
+                : await axios.get(
+                      `http://localhost:3003/api/audio/all?page=${page}&limit=4`
+                  )
             setLoading(true)
-            const response = await axios.get(
-                `http://localhost:3003/api/audio/all?page=${page}&limit=4`
-            )
+            // const response = await axios.get(
+            //     `http://localhost:3003/api/audio/all?page=${page}&limit=4`,config
+            // )
 
             if (response.data.result.length <= 0) {
                 setIsEmpty(true)
@@ -57,66 +71,61 @@ const InfiniteScroll = () => {
     }, [loading])
 
     return (
-        <>
-            <div className='flex flex-col w-5/12 items-center'>
-                <div className='flex  justify-center items-center w-full py-2'>
-                    <div className='flex flex-col mx-auto gap-5'>
-                        {audios.length > 0 &&
-                            audios.map((audio) => {
-                                const {
-                                    id,
-                                    createdBy,
-                                    audioKey,
-                                    coverKey,
-                                    title,
-                                    isUserLikedDislike,
-                                    likes,
-                                    dislikes
-                                } = audio
+        <div className='flex flex-col mx-auto gap-5'>
+            {audios.length > 0 &&
+                audios.map((audio) => {
+                    const {
+                        id,
+                        createdBy,
+                        audioKey,
+                        coverKey,
+                        title,
+                        isUserLikedDislike,
+                        likes,
+                        dislikes
+                    } = audio
 
-                                return (
-                                    <div
+                    console.log(isUserLikedDislike)
+
+                    return (
+                        <div
+                            key={id}
+                            className='flex items-center py-6 border-2 border-slate-500/50 rounded-xl'
+                        >
+                            <div className='sat'>
+                                <div className='flex flex-col justify-center items-center '>
+                                    <div className='flex flex-col text-center gap-1 w-fit'></div>
+
+                                    <img
+                                        src={`${coverKey}`}
+                                        className='rounded-md rotating-div'
+                                        width={'75%'}
+                                        height={'75%'}
+                                        alt='music cover'
+                                    />
+                                    <span>{title}</span>
+                                </div>
+                                <div className='flex justify-center items-center w-full py-2'>
+                                    <Player
+                                        isUserLikedDislike={isUserLikedDislike}
+                                        likes={likes}
+                                        dislikes={dislikes}
+                                        title={title}
                                         key={id}
-                                        className='flex flex-col items-center py-6 border-2 border-slate-500/50 rounded-xl'
-                                    >
-                                        <div className='flex flex-col justify-center items-center '>
-                                            <div className='flex flex-col text-center gap-1 w-fit'></div>
-
-                                            <img
-                                                src={`${coverKey}`}
-                                                className='rounded-md rotating-div'
-                                                width={'75%'}
-                                                height={'75%'}
-                                                alt='music cover'
-                                            />
-                                        </div>
-                                        <span>{title}</span>
-                                        <div className='flex justify-center items-center w-full py-2'>
-                                            <Player
-                                                isUserLikedDislike={
-                                                    isUserLikedDislike
-                                                }
-                                                likes={likes}
-                                                dislikes={dislikes}
-                                                title={title}
-                                                key={id}
-                                                id={id}
-                                                createdBy={createdBy}
-                                                audioUrl={audioKey}
-                                            />
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        {!isEmpty ? (
-                            <div ref={observerRef}>
-                                {loading && <p>Loading more...</p>}
+                                        id={id}
+                                        createdBy={createdBy}
+                                        audioUrl={audioKey}
+                                    />
+                                </div>
                             </div>
-                        ) : null}
-                    </div>
-                </div>
-            </div>
-        </>
+                            <Comments />
+                        </div>
+                    )
+                })}
+            {!isEmpty ? (
+                <div ref={observerRef}>{loading && <p>Loading more...</p>}</div>
+            ) : null}
+        </div>
     )
 }
 

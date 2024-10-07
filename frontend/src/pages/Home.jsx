@@ -2,18 +2,20 @@ import React, { useEffect, useState } from 'react'
 
 import BottomBar from '../myComponents/BottomBar'
 import { useDispatch, useSelector } from 'react-redux'
-import { setAuthMode } from '../features/user/userSlice'
+import { setAuthMode, setToken } from '../features/user/userSlice'
 import ModalComponent from '../myComponents/ModalComponent'
 import RegisterComponent from '../myComponents/RegisterComponent'
 import LoginComponent from '../myComponents/LoginComponent'
-import { api } from '../utils/api'
+
 import InfiniteScroll from '../myComponents/InfiniteScroll'
-import { Volume } from 'lucide-react'
-import LoginExpired from './LoginExpired'
+
+import Comments from './Comments'
 
 const Home = () => {
     const dispatch = useDispatch()
-
+    if (localStorage.getItem('accessToken')) {
+        dispatch(setToken(localStorage.getItem('accessToken')))
+    }
     const { authMode } = useSelector((state) => state.user)
 
     const { user } = useSelector((state) => state.user)
@@ -31,30 +33,34 @@ const Home = () => {
             })
         )
     }
-    console.log(isAuth)
 
     return (
         <div className=' relative flex  '>
             <div className='flex flex-col items-center w-fit '>
-                <InfiniteScroll />
+                <div className='flex flex-col w-4/12 items-center'>
+                    <div className='flex  justify-center items-center w-full py-2'>
+                        <InfiniteScroll />
+                    </div>
+                </div>
             </div>
 
             <div>
-                <ModalComponent
-                    Comp={
-                        authMode.register && !authMode.close ? (
-                            <RegisterComponent onClose={closeModal} />
-                        ) : authMode.login && !authMode.close ? (
-                            <LoginComponent onClose={closeModal} />
-                        ) : null
-                    }
-                    isAuth={isAuth}
-                    open={authMode}
-                />
+                {(authMode.register && !authMode.close) ||
+                (authMode.login && !authMode.close) ? (
+                    <ModalComponent
+                        Comp={
+                            authMode.register && !authMode.close ? (
+                                <RegisterComponent onClose={closeModal} />
+                            ) : authMode.login && !authMode.close ? (
+                                <LoginComponent onClose={closeModal} />
+                            ) : null
+                        }
+                        isAuth={isAuth}
+                        open={authMode}
+                    />
+                ) : null}
             </div>
-            <div className='sat'>
-                {!isAuth ? <BottomBar isSignedIn={isAuth} /> : null}
-            </div>
+            <div>{!isAuth ? <BottomBar isSignedIn={isAuth} /> : null}</div>
         </div>
     )
 }

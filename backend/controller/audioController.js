@@ -78,6 +78,7 @@ const getAllAudio = catchAsync(async (req, res, next) => {
 
     let idToken = ''
     let userId = null
+    console.log(req.headers.authorization)
 
     if (
         req.headers.authorization &&
