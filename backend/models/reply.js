@@ -52,3 +52,5 @@ const replies = sequelize.define(
     },
     { freezeTableName: true, modelName: 'Replies' }
 )
+
+module.exports = replies

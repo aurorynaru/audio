@@ -24,7 +24,10 @@ const Home = () => {
     const getUserInfo = async () => {
         try {
             const res = await api.get('api/auth/get-user')
-            dispatch(setUser(res.data))
+
+            if (res.status === 200) {
+                dispatch(setUser(res.data))
+            }
         } catch (error) {
             console.log(error)
         }

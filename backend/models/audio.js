@@ -1,6 +1,7 @@
 'use strict'
 const { Model, DataTypes } = require('sequelize')
 const sequelize = require('../config/database')
+const replies = require('./reply')
 
 const audio = sequelize.define(
     'Audio',
@@ -48,5 +49,8 @@ const audio = sequelize.define(
     },
     { paranoid: true, modelName: 'Audio', freezeTableName: true }
 )
+
+audio.hasMany(replies, { foreignKey: 'postId' })
+replies.belongsTo(audio, { foreignKey: 'postId' })
 
 module.exports = audio

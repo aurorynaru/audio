@@ -2,16 +2,21 @@ import React from 'react'
 
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import LabelComponent from '../../LabelComponent'
 
 const CommentInput = ({ type = 'text', className = '', ...props }) => {
     return (
         <div className='flex justify-start items-center gap-2'>
-            <img
+            <Avatar>
+                <AvatarImage src={props.profilePicture} alt='test' />
+                <AvatarFallback>pfp</AvatarFallback>
+            </Avatar>
+            {/* <img
                 src={props.profilePicture}
                 className='w-[54px] h-[54px] rounded-full border-2'
                 alt='profile picture'
-            ></img>
+            ></img> */}
             <div className='flex flex-col gap-2'>
                 <LabelComponent
                     label={'username'}

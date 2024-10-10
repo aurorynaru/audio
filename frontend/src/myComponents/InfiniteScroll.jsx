@@ -81,7 +81,8 @@ const InfiniteScroll = () => {
                         title,
                         isUserLikedDislike,
                         likes,
-                        dislikes
+                        dislikes,
+                        comments
                     } = audio
 
                     return (
@@ -117,7 +118,7 @@ const InfiniteScroll = () => {
                             </div>
                             <div className='w-1/2 border-2  h-64'>
                                 <div className='comment p-1'>
-                                    <Comments user={user} />
+                                    <Comments user={user} comments={comments} />
                                 </div>
                             </div>
                         </div>

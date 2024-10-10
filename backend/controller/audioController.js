@@ -9,6 +9,7 @@ const s3 = require('../utils/s3Client')
 const getS3Url = require('../utils/getS3Url')
 const { getParams, getSignedParams } = require('../utils/getParams')
 const jwt = require('jsonwebtoken')
+const replies = require('../models/reply')
 
 const createAudio = catchAsync(async (req, res, next) => {
     const userId = req.user.id
@@ -78,15 +79,34 @@ const getAllAudio = catchAsync(async (req, res, next) => {
 
     let idToken = ''
     let userId = null
-    console.log(req.headers.authorization)
 
     if (
         req.headers.authorization &&
         req.headers.authorization.startsWith('Bearer')
     ) {
         idToken = req.headers.authorization.split(' ')[1]
-        const tokenDetail = jwt.verify(idToken, process.env.JWT_TOKEN)
-        userId = tokenDetail.id
+        const tokenDetail = jwt.verify(
+            idToken,
+            process.env.JWT_TOKEN,
+            (err, data) => {
+                if (err) {
+                    return false
+                } else {
+                    return data
+                }
+            }
+        )
+
+        if (tokenDetail) {
+            userId = tokenDetail.id
+        }
+
+        // console.log(yo)
+
+        // if (jwt.verify(idToken, process.env.JWT_TOKEN)) {
+        //     const tokenDetail = jwt.verify(idToken, process.env.JWT_TOKEN)
+        //     userId = tokenDetail.id
+        // }
     }
 
     const result = await Promise.all(
@@ -95,6 +115,10 @@ const getAllAudio = catchAsync(async (req, res, next) => {
 
             const paramsAudio = getSignedParams('audioKey', jsonData.audioKey)
             const paramsCover = getSignedParams('coverKey', jsonData.coverKey)
+
+            const comments = await replies.findAll({
+                where: { postId: jsonData.id, parentReplyId: null }
+            })
 
             jsonData.audioKey = await getS3Url(paramsAudio)
             jsonData.coverKey = await getS3Url(paramsCover)
@@ -125,6 +149,7 @@ const getAllAudio = catchAsync(async (req, res, next) => {
             }
             jsonData.likes = likesCount
             jsonData.dislikes = disLikesCount
+            jsonData.comments = comments
 
             return jsonData
         })
@@ -153,4 +178,67 @@ const getAudio = catchAsync(async (req, res, next) => {
     })
 })
 
-module.exports = { createAudio, getAllAudio, getAudio }
+const sendComment = catchAsync(async (req, res, next) => {
+    const { content, postId } = req.body
+    console.log(content, postId)
+
+    let idToken = ''
+    let userId = null
+
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        idToken = req.headers.authorization.split(' ')[1]
+        const tokenDetail = jwt.verify(
+            idToken,
+            process.env.JWT_TOKEN,
+            (err, data) => {
+                if (err) {
+                    return false
+                } else {
+                    return data
+                }
+            }
+        )
+        if (tokenDetail) {
+            userId = tokenDetail.id
+        }
+    }
+
+    const result = await replies.create({
+        content,
+        postId,
+        userId
+    })
+
+    if (!result) {
+        next(new AppError('error sending the message', 401))
+    }
+
+    return res.status(201).json({
+        result
+    })
+})
+
+const getAudioComments = catchAsync(async (req, res, next) => {
+    const { postId } = req.body
+
+    const result = await replies.findAll({
+        where: { postId: postId, parentReplyId: null }
+    })
+    if (!result) {
+        next(new AppError('error retrieving comments', 401))
+    }
+
+    return res.status(200).json({
+        result
+    })
+})
+module.exports = {
+    createAudio,
+    getAllAudio,
+    getAudio,
+    sendComment,
+    getAudioComments
+}
