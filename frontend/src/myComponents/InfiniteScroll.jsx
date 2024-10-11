@@ -88,9 +88,9 @@ const InfiniteScroll = () => {
                     return (
                         <div
                             key={id}
-                            className='flex items-center py-6 border-2 border-slate-500/50 rounded-xl gap-2 px-4 '
+                            className='flex items-center py-6 border-2 border-slate-500/50 rounded-xl gap-2 px-4 md:flex-col '
                         >
-                            <div className='w-1/2'>
+                            <div className='w-1/2 md:w-full '>
                                 <div className='flex flex-col justify-center items-center '>
                                     <div className='flex flex-col text-center gap-1 w-fit'></div>
 
@@ -116,10 +116,8 @@ const InfiniteScroll = () => {
                                     />
                                 </div>
                             </div>
-                            <div className='w-1/2 border-2  h-64'>
-                                <div className='comment p-1'>
-                                    <Comments user={user} comments={comments} />
-                                </div>
+                            <div className='w-1/2  md:w-full border-2  rounded-2xl'>
+                                <Comments user={user} comments={comments} />
                             </div>
                         </div>
                     )

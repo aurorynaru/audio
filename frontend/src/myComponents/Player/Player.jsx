@@ -95,7 +95,6 @@ const Player = ({
                 },
                 { withCredentials: true }
             )
-            console.log(res)
             if (res.status === 200) {
                 const updatedPost = {
                     id: res.data.interactionData.postId,

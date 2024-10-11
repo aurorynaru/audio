@@ -16,18 +16,33 @@ const audioSlice = createSlice({
             const index = state.audios.findIndex(
                 (audio) => audio.id === updatedAudio.id
             )
-            console.log(updatedAudio)
+
             if (index !== -1) {
                 state.audios[index] = {
                     ...state.audios[index],
                     ...updatedAudio
                 }
             }
+        },
+
+        updateComments: (state, action) => {
+            const updateComment = action.payload
+            const index = state.audios.findIndex(
+                (audio) => audio.id === updatedAudio.id
+            )
+
+            if (index !== -1) {
+                // state.audios[index] = {
+                //     ...state.audios[index],
+                //     ...updatedAudio
+                // }
+            }
         }
     }
 })
 
 // Action creators are generated for each case reducer function
-export const { setAudio, updateLikeDislike } = audioSlice.actions
+export const { setAudio, updateLikeDislike, updateComments } =
+    audioSlice.actions
 
 export default audioSlice.reducer

@@ -10,6 +10,7 @@ const getS3Url = require('../utils/getS3Url')
 const { getParams, getSignedParams } = require('../utils/getParams')
 const jwt = require('jsonwebtoken')
 const replies = require('../models/reply')
+const getAvatarUrl = require('../utils/getAvatarUrl')
 
 const createAudio = catchAsync(async (req, res, next) => {
     const userId = req.user.id
@@ -117,7 +118,19 @@ const getAllAudio = catchAsync(async (req, res, next) => {
             const paramsCover = getSignedParams('coverKey', jsonData.coverKey)
 
             const comments = await replies.findAll({
-                where: { postId: jsonData.id, parentReplyId: null }
+                where: { postId: jsonData.id, parentReplyId: null },
+                include: {
+                    model: user,
+                    attributes: ['userName', 'email', 'profilePicture']
+                }
+            })
+
+            const newComments = comments.map((comment) => {
+                const commentJson = comment.toJSON()
+                commentJson.User.profilePicture = getAvatarUrl(
+                    commentJson.User.profilePicture
+                )
+                return commentJson
             })
 
             jsonData.audioKey = await getS3Url(paramsAudio)
@@ -149,7 +162,7 @@ const getAllAudio = catchAsync(async (req, res, next) => {
             }
             jsonData.likes = likesCount
             jsonData.dislikes = disLikesCount
-            jsonData.comments = comments
+            jsonData.comments = newComments
 
             return jsonData
         })
@@ -180,7 +193,6 @@ const getAudio = catchAsync(async (req, res, next) => {
 
 const sendComment = catchAsync(async (req, res, next) => {
     const { content, postId } = req.body
-    console.log(content, postId)
 
     let idToken = ''
     let userId = null

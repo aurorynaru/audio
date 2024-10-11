@@ -10,6 +10,7 @@ const {
 const jwt = require('jsonwebtoken')
 const s3 = require('../utils/s3Client')
 const AppError = require('../utils/appError')
+const getAvatarUrl = require('../utils/getAvatarUrl')
 
 const signUp = catchAsync(async (req, res, next) => {
     const profilePicture = req.file.path.split(`\\`)[2]
@@ -85,11 +86,6 @@ const logIn = catchAsync(async (req, res, next) => {
         }
     }
 
-    const getAvatarUrl = (profilePicture) => {
-        const bucketName = process.env.BUCKET_NAME_MODEL_IMG
-        return `https://${bucketName}.s3.ap-southeast-1.amazonaws.com/avatar/${profilePicture}`
-    }
-
     newRes.imgUrl = getAvatarUrl(result.profilePicture)
 
     const accessToken = generateToken({ id: result.id })
@@ -144,11 +140,6 @@ const getUser = catchAsync(async (req, res, next) => {
     delete resUser.deletedAt
     delete resUser.password
     delete resUser.isAdmin
-
-    const getAvatarUrl = (profilePicture) => {
-        const bucketName = process.env.BUCKET_NAME_MODEL_IMG
-        return `https://${bucketName}.s3.ap-southeast-1.amazonaws.com/avatar/${profilePicture}`
-    }
 
     resUser.imgUrl = getAvatarUrl(resUser.profilePicture)
 
