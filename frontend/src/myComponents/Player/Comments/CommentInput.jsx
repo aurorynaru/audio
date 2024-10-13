@@ -5,30 +5,44 @@ import { api } from '@/src/utils/api'
 import { Textarea } from '@/components/ui/textarea'
 import ButtonComponent from '../../ButtonComponent'
 import { useDispatch, useSelector } from 'react-redux'
+import { updateComments } from '@/src/features/audio/audioSlice'
 
 const CommentInput = ({ type = 'text', className = '', ...props }) => {
     const dispatch = useDispatch()
     const { audios } = useSelector((state) => state.audio)
-
     const [comment, setComment] = useState('')
     const textareaRef = useRef(null)
+    const { token } = useSelector((state) => state.user)
 
     const sendComment = async () => {
         try {
-            const res = await api.post('api/audio/send-message', {
-                content: comment,
-                postId: props.id
-            })
+            const config = {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+
+            const res = await api.post(
+                'api/audio/send-message',
+                {
+                    content: comment,
+                    postId: props.id
+                },
+                config
+            )
 
             if (res.status === 201) {
-                // const updatedPost = {
-                //     id: res.data.interactionData.postId,
-                //     likes: res.data.interactionData.likes,
-                //     dislikes: res.data.interactionData.dislikes,
-                //     isUserLikedDislike:
-                //         res.data.interactionData.isUserLikedDislike
-                // }
-                // dispatch(updateLikeDislike(updatedPost))
+                const { content, id, userId, parentReplyId, postId, User } =
+                    res.data.result
+                const message = {
+                    id: postId,
+                    content: content,
+                    commentId: id,
+                    userId: userId,
+                    parentReplyId: parentReplyId ? parentReplyId : null,
+                    user: User
+                }
+
+                dispatch(updateComments(message))
+                setComment('')
             }
         } catch (error) {
             console.log(error)
@@ -84,9 +98,9 @@ const CommentInput = ({ type = 'text', className = '', ...props }) => {
                 <div className='flex justify-end items-end'>
                     <ButtonComponent
                         fn={sendComment}
-                        value={'send'}
+                        value={'Send'}
                         className={
-                            ' w-5/12 h-7 text-xs p-2 sn:w-3/12 lg:w-2/12'
+                            ' w-2/12 h-7 text-xs p-2 sn:w-3/12 lg:w-2/12'
                         }
                     />
                 </div>

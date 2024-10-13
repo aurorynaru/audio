@@ -7,11 +7,12 @@ import { Separator } from '@/components/ui/separator'
 
 const Comments = ({ ...props }) => {
     // console.log(props.comments)
-    console.log(props.comments)
+
     return (
         <div className='w-full rounded-xl p-2'>
             {props.user && (
                 <CommentInput
+                    id={props.id}
                     profilePicture={props.user.imgUrl}
                     userName={props.user.userName}
                 />
@@ -19,7 +20,8 @@ const Comments = ({ ...props }) => {
             <ScrollArea className='flex flex-col overflow-hidden overflow-y-auto h-80 py-2 '>
                 {props.comments.length > 0 &&
                     props.comments.map((comment, index) => {
-                        // console.log(index)
+                        // console.log(comment)
+
                         return (
                             <React.Fragment key={index}>
                                 <Separator className='my-2' />

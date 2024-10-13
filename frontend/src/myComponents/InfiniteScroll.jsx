@@ -117,7 +117,11 @@ const InfiniteScroll = () => {
                                 </div>
                             </div>
                             <div className='w-1/2  md:w-full border-2  rounded-2xl'>
-                                <Comments user={user} comments={comments} />
+                                <Comments
+                                    user={user}
+                                    comments={comments}
+                                    id={id}
+                                />
                             </div>
                         </div>
                     )

@@ -8,7 +8,7 @@ const CommentList = ({ ...props }) => {
             <AvatarComponent
                 src={props.profilePicture}
                 alt={'test'}
-                fallback={'yo'}
+                fallback={'pf'}
             />
 
             <div className='flex flex-col gap-2'>

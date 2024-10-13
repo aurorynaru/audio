@@ -122,7 +122,8 @@ const getAllAudio = catchAsync(async (req, res, next) => {
                 include: {
                     model: user,
                     attributes: ['userName', 'email', 'profilePicture']
-                }
+                },
+                order: [['createdAt', 'DESC']]
             })
 
             const newComments = comments.map((comment) => {
@@ -218,15 +219,39 @@ const sendComment = catchAsync(async (req, res, next) => {
         }
     }
 
-    const result = await replies.create({
-        content,
-        postId,
-        userId
-    })
+    const newReply = await replies.create(
+        {
+            content,
+            postId,
+            userId
+        },
+        {
+            include: {
+                model: user,
+                attributes: ['userName', 'email', 'profilePicture']
+            }
+        }
+    )
 
-    if (!result) {
+    if (!newReply) {
         next(new AppError('error sending the message', 401))
     }
+
+    const replyData = await replies.findOne({
+        where: { id: newReply.id },
+        include: {
+            model: user,
+            attributes: ['userName', 'email', 'profilePicture']
+        }
+    })
+
+    if (!replyData) {
+        next(new AppError('error  retrieving user data', 401))
+    }
+
+    const result = replyData.toJSON()
+
+    result.User.profilePicture = getAvatarUrl(result.User.profilePicture)
 
     return res.status(201).json({
         result
@@ -237,7 +262,8 @@ const getAudioComments = catchAsync(async (req, res, next) => {
     const { postId } = req.body
 
     const result = await replies.findAll({
-        where: { postId: postId, parentReplyId: null }
+        where: { postId: postId, parentReplyId: null },
+        order: [['createdAt', 'DESC']]
     })
     if (!result) {
         next(new AppError('error retrieving comments', 401))
