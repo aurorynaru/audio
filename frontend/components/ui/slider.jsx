@@ -41,13 +41,13 @@ const Slider = React.forwardRef(({ className, ...props }, ref) => {
             )}
             value={[value]}
             onValueChange={handleValueChange}
-            orientation='vertical'
+            // orientation='vertical'
             min={0}
             max={100}
             step={1}
             minStepsBetweenThumbs={1}
         >
-            <SliderPrimitive.Track className='relative h-24 w-full grow overflow-hidden rounded-full bg-secondary'>
+            <SliderPrimitive.Track className='relative h-[3px] w-full grow overflow-hidden rounded-full bg-secondary'>
                 <SliderPrimitive.Range className='absolute h-full bg-primary' />
             </SliderPrimitive.Track>
 

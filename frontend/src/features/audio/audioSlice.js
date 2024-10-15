@@ -42,7 +42,6 @@ const audioSlice = createSlice({
                     : null
             }
 
-            console.log(state.audios[index])
             if (index !== -1) {
                 const comments = [...state.audios[index].comments]
                 comments.push(message)

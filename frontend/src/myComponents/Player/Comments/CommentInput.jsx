@@ -40,9 +40,8 @@ const CommentInput = ({ type = 'text', className = '', ...props }) => {
                     parentReplyId: parentReplyId ? parentReplyId : null,
                     user: User
                 }
-
-                dispatch(updateComments(message))
                 setComment('')
+                dispatch(updateComments(message))
             }
         } catch (error) {
             console.log(error)
@@ -81,6 +80,7 @@ const CommentInput = ({ type = 'text', className = '', ...props }) => {
                     className='w-full p-2 border border-gray-300 rounded-md resize-none overflow-hidden'
                     placeholder='Add a comment...'
                     rows={1}
+                    value={comment}
                     onInput={handleInput}
                     onChange={(e) => {
                         setComment(e.target.value)

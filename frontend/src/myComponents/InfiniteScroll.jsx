@@ -15,7 +15,7 @@ const InfiniteScroll = () => {
     const dispatch = useDispatch()
     const { audios } = useSelector((state) => state.audio)
     const { token, user } = useSelector((state) => state.user)
-
+    console.log(audios)
     useEffect(() => {
         const fetchAudios = async () => {
             const config = {

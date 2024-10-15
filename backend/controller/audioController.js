@@ -263,6 +263,10 @@ const getAudioComments = catchAsync(async (req, res, next) => {
 
     const result = await replies.findAll({
         where: { postId: postId, parentReplyId: null },
+        include: {
+            model: user,
+            attributes: ['userName', 'email', 'profilePicture']
+        },
         order: [['createdAt', 'DESC']]
     })
     if (!result) {
