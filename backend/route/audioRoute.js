@@ -4,7 +4,8 @@ const {
     getAllAudio,
     getAudio,
     sendComment,
-    getAudioComments
+    getAudioComments,
+    LikeDislikeComment
 } = require('../controller/audioController')
 const { uploadFiles } = require('../utils/multerStorage')
 const {
@@ -31,7 +32,8 @@ router.post(
 router.get('/all/', getAllAudio)
 router.get('/get/', getAudio)
 router.post('/send-message', sendComment)
-router.get('/get-audio-comment', getAudioComments)
+router.post('/get-audio-comment', getAudioComments)
 router.post('/likeDislike', authentication, LikeDislike)
+router.post('/likeDislike-comment', authentication, LikeDislikeComment)
 
 module.exports = router

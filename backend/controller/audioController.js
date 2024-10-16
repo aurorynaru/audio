@@ -11,6 +11,7 @@ const { getParams, getSignedParams } = require('../utils/getParams')
 const jwt = require('jsonwebtoken')
 const replies = require('../models/reply')
 const getAvatarUrl = require('../utils/getAvatarUrl')
+const commentLikeDislikes = require('../models/commentlikedislike')
 
 const createAudio = catchAsync(async (req, res, next) => {
     const userId = req.user.id
@@ -117,22 +118,22 @@ const getAllAudio = catchAsync(async (req, res, next) => {
             const paramsAudio = getSignedParams('audioKey', jsonData.audioKey)
             const paramsCover = getSignedParams('coverKey', jsonData.coverKey)
 
-            const comments = await replies.findAll({
-                where: { postId: jsonData.id, parentReplyId: null },
-                include: {
-                    model: user,
-                    attributes: ['userName', 'email', 'profilePicture']
-                },
-                order: [['createdAt', 'DESC']]
-            })
+            // const comments = await replies.findAll({
+            //     where: { postId: jsonData.id, parentReplyId: null },
+            //     include: {
+            //         model: user,
+            //         attributes: ['userName', 'email', 'profilePicture']
+            //     },
+            //     order: [['createdAt', 'DESC']]
+            // })
 
-            const newComments = comments.map((comment) => {
-                const commentJson = comment.toJSON()
-                commentJson.User.profilePicture = getAvatarUrl(
-                    commentJson.User.profilePicture
-                )
-                return commentJson
-            })
+            // const newComments = comments.map((comment) => {
+            //     const commentJson = comment.toJSON()
+            //     commentJson.User.profilePicture = getAvatarUrl(
+            //         commentJson.User.profilePicture
+            //     )
+            //     return commentJson
+            // })
 
             jsonData.audioKey = await getS3Url(paramsAudio)
             jsonData.coverKey = await getS3Url(paramsCover)
@@ -163,7 +164,8 @@ const getAllAudio = catchAsync(async (req, res, next) => {
             }
             jsonData.likes = likesCount
             jsonData.dislikes = disLikesCount
-            jsonData.comments = newComments
+            jsonData.comments = []
+            // jsonData.comments = newComments
 
             return jsonData
         })
@@ -259,18 +261,134 @@ const sendComment = catchAsync(async (req, res, next) => {
 })
 
 const getAudioComments = catchAsync(async (req, res, next) => {
+    const { page = 1, limit = 10, sort = ' ' } = req.query
     const { postId } = req.body
 
-    const result = await replies.findAll({
+    const resReplies = await replies.findAll({
         where: { postId: postId, parentReplyId: null },
-        include: {
-            model: user,
-            attributes: ['userName', 'email', 'profilePicture']
-        },
-        order: [['createdAt', 'DESC']]
+        include: [
+            {
+                model: user,
+                attributes: ['userName', 'email', 'profilePicture']
+            },
+            {
+                model: commentLikeDislikes,
+                attributes: ['userId', 'commentId', 'isLike']
+            }
+        ],
+        order: [['createdAt', 'DESC']],
+        limit: parseInt(limit),
+        offset: (page - 1) * limit
     })
-    if (!result) {
+
+    if (!resReplies) {
         next(new AppError('error retrieving comments', 401))
+    }
+
+    const result = await Promise.all(
+        resReplies.map((comment) => {
+            comment.User.profilePicture = getAvatarUrl(
+                comment.User.profilePicture
+            )
+
+            return comment
+        })
+    )
+    return res.status(200).json({
+        result
+    })
+})
+
+const LikeDislikeComment = catchAsync(async (req, res, next) => {
+    const { commentId, isLike } = req.body
+
+    let idToken = ''
+
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        idToken = req.headers.authorization.split(' ')[1]
+    }
+
+    if (!idToken) {
+        return next(new AppError('Please login to gain access', 401))
+    }
+
+    const tokenDetail = jwt.verify(idToken, process.env.JWT_TOKEN)
+
+    const loginUser = await user.findByPk(tokenDetail.id)
+
+    const userId = loginUser.id
+
+    if (!loginUser) {
+        return next(new AppError('Invalid user', 401))
+    }
+    const commentData = await replies.findByPk(commentId)
+
+    if (!commentData) {
+        return next(new AppError('Invalid comment data', 401))
+    }
+
+    const checkLd = await commentLikeDislikes.findOne({
+        where: { userId: loginUser.id, commentId: commentData.id }
+    })
+
+    if (!checkLd) {
+        await commentLikeDislikes.create({
+            isLike,
+            userId,
+            commentId
+        })
+    } else {
+        if (checkLd.isLike === isLike) {
+            await commentLikeDislikes.destroy({
+                where: { id: checkLd.id }
+            })
+        } else {
+            await commentLikeDislikes.update(
+                { isLike: !checkLd.isLike },
+                {
+                    where: { id: checkLd.id }
+                }
+            )
+        }
+    }
+
+    const data = await commentLikeDislikes.findByPk(commentId)
+
+    const userInteraction = await commentLikeDislikes.findOne({
+        where: { userId, commentId: commentData.id }
+    })
+
+    let isUserLikedDislike = ''
+
+    if (userInteraction) {
+        isUserLikedDislike = userInteraction.isLike ? 'liked' : 'disliked'
+    } else {
+        isUserLikedDislike = isUserLikedDislike.isUserLikedDislike = 'none'
+    }
+
+    const likesCount = await commentLikeDislikes.count({
+        where: { commentId: commentData.id, isLike: true }
+    })
+    const disLikesCount = await commentLikeDislikes.count({
+        where: { commentId: commentData.id, isLike: false }
+    })
+
+    let result = {}
+
+    if (data) {
+        result = data.toJSON()
+
+        result.isUserLikedDislike = isUserLikedDislike
+        result.likes = likesCount
+        result.dislikes = disLikesCount
+    } else {
+        result.isUserLikedDislike = isUserLikedDislike
+        result.likes = likesCount
+        result.dislikes = disLikesCount
+        result.commentId = commentId
     }
 
     return res.status(200).json({
@@ -282,5 +400,6 @@ module.exports = {
     getAllAudio,
     getAudio,
     sendComment,
-    getAudioComments
+    getAudioComments,
+    LikeDislikeComment
 }

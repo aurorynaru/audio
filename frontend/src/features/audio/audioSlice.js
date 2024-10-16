@@ -25,6 +25,14 @@ const audioSlice = createSlice({
             }
         },
 
+        addComments: (state, action) => {
+            const comments = action.payload
+
+            state.audios.comments = [
+                ...new Set([...state.audios.comments, ...comments])
+            ]
+        },
+
         updateComments: (state, action) => {
             const updateComment = action.payload
             const index = state.audios.findIndex(
