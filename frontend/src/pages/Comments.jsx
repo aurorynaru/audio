@@ -1,58 +1,83 @@
-import { useEffect, useState } from 'react'
-
+import { useEffect, useState, Fragment, useRef } from 'react'
 import CommentInput from '../myComponents/Player/Comments/CommentInput'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import CommentList from '../myComponents/Player/Comments/CommentList'
 import { Separator } from '@/components/ui/separator'
 import { useDispatch, useSelector } from 'react-redux'
-import { api } from '../utils/api'
 import axios from 'axios'
+import { addComments } from '../features/audio/audioSlice'
 
 const Comments = ({ ...props }) => {
     const dispatch = useDispatch()
-    const [comments, setComments] = useState([])
-
-    const { audios } = useSelector((state) => state.audio)
-
+    const observerRefComments = useRef(null)
+    const [commentPage, setCommentPage] = useState(1)
+    const [loadingComments, setLoadingComments] = useState(false)
+    const [isEmpty, setIsEmpty] = useState(false)
+    const [hasMore, setHasMore] = useState(true)
+    const [ini, setIni] = useState(false)
+    const [audioComments, setAudioComments] = useState([])
+    // const commentObj = useSelector((state) =>
+    //     state.audio.audios.find((audio) => audio.id === props.id)
+    // )
+    console.log(audioComments)
     useEffect(() => {
         const getComments = async () => {
+            setLoadingComments(true)
             try {
-                const res = await axios.post(
-                    'http://localhost:3003/api/audio/get-audio-comment',
-                    {
-                        postId: props.id
+                const url = `http://localhost:3003/api/audio/get-audio-comment?page=${commentPage}&limit=10`
+                const res = await axios.post(url, { postId: props.id })
+                if (res.status === 200) {
+                    const fetchedComments = res.data.result
+                    // console.log(fetchedComments)
+                    if (fetchedComments.length > 0 && hasMore) {
+                        setAudioComments((prev) => {
+                            return [...new Set([...prev, ...fetchedComments])]
+                        })
+
+                        // dispatch(
+                        //     addComments({
+                        //         comment: fetchedComments,
+                        //         id: props.id
+                        //     })
+                        // )
+                        setIni(true)
+                    } else {
+                        setHasMore(false)
+                        setIsEmpty(true)
                     }
-                )
-                console.log(res)
-                if (res.status === 201) {
-                    dispatch(res)
                 }
             } catch (error) {
-                console.log(error)
+                console.error(error)
+            } finally {
+                setLoadingComments(false)
             }
         }
-        if (props.id != null) {
-            getComments()
-        }
-    }, [])
 
+        getComments()
+    }, [commentPage])
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting && !loadingComments && hasMore) {
+                    setCommentPage((prev) => prev + 1)
+                }
+            },
+            { threshold: 1 }
+        )
+
+        if (observerRefComments.current) {
+            observer.observe(observerRefComments.current)
+        }
+
+        return () => {
+            if (observerRefComments.current) {
+                observer.unobserve(observerRefComments.current)
+            }
+        }
+    }, [loadingComments])
     return (
         <div className='w-full rounded-xl p-2'>
-            {audios.map((comment, index) => {
-                if (comment.id === props.id && comment.length > 0) {
-                    return (
-                        <React.Fragment key={index}>
-                            <Separator className='my-2' />
-                            <CommentList
-                                id={comment.id}
-                                profilePicture={comment.User.profilePicture}
-                                userName={comment.User.userName}
-                                comment={comment.content}
-                            />
-                        </React.Fragment>
-                    )
-                }
-            })}
             {props.user && (
                 <CommentInput
                     id={props.id}
@@ -60,17 +85,13 @@ const Comments = ({ ...props }) => {
                     userName={props.user.userName}
                 />
             )}
-            <ScrollArea className='flex flex-col overflow-hidden overflow-y-auto h-80 py-2 '>
-                {Boolean(
-                    audios.map(
-                        (comment) =>
-                            comment.id === props.id && comment.length > 0
-                    )
-                ) &&
-                    audios.map((comment, index) => {
-                        if (comment.id === props.id && comment.length > 0) {
+
+            {ini ? (
+                <ScrollArea className='flex flex-col overflow-hidden overflow-y-auto h-80 py-2'>
+                    {audioComments.length > 0 &&
+                        audioComments.map((comment, index) => {
                             return (
-                                <React.Fragment key={index}>
+                                <Fragment key={index}>
                                     <Separator className='my-2' />
                                     <CommentList
                                         id={comment.id}
@@ -80,28 +101,19 @@ const Comments = ({ ...props }) => {
                                         userName={comment.User.userName}
                                         comment={comment.content}
                                     />
-                                </React.Fragment>
+                                </Fragment>
                             )
-                        }
-                    })}
+                        })}
 
-                {/* {props.comments.length > 0 &&
-                    props.comments.map((comment, index) => {
-                        // console.log(comment)
-
-                        return (
-                            <React.Fragment key={index}>
-                                <Separator className='my-2' />
-                                <CommentList
-                                    id={comment.id}
-                                    profilePicture={comment.User.profilePicture}
-                                    userName={comment.User.userName}
-                                    comment={comment.content}
-                                />
-                            </React.Fragment>
-                        )
-                    })} */}
-            </ScrollArea>
+                    {!isEmpty ? (
+                        <div ref={observerRefComments}>
+                            {loadingComments && <p>Loading more...</p>}
+                        </div>
+                    ) : null}
+                </ScrollArea>
+            ) : (
+                <div>loading....</div>
+            )}
         </div>
     )
 }

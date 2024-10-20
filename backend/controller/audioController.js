@@ -72,7 +72,7 @@ const getAllAudio = catchAsync(async (req, res, next) => {
         include: [
             {
                 model: user,
-                attributes: ['id']
+                attributes: ['id', 'userName', 'email', 'profilePicture']
             }
         ],
         limit: parseInt(limit), // limit the number of items
@@ -126,6 +126,11 @@ const getAllAudio = catchAsync(async (req, res, next) => {
             //     },
             //     order: [['createdAt', 'DESC']]
             // })
+
+            jsonData.User = {
+                ...jsonData.User,
+                profilePicture: getAvatarUrl(jsonData.User.profilePicture)
+            }
 
             // const newComments = comments.map((comment) => {
             //     const commentJson = comment.toJSON()
@@ -294,6 +299,7 @@ const getAudioComments = catchAsync(async (req, res, next) => {
             return comment
         })
     )
+
     return res.status(200).json({
         result
     })

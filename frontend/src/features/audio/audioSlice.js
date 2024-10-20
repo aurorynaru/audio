@@ -26,11 +26,23 @@ const audioSlice = createSlice({
         },
 
         addComments: (state, action) => {
-            const comments = action.payload
+            const commentsList = action.payload.comment
+            const id = action.payload.id
+            const index = state.audios.findIndex((audio) => audio.id === id)
 
-            state.audios.comments = [
-                ...new Set([...state.audios.comments, ...comments])
-            ]
+            if (index !== -1) {
+                // Check if the audio post already has a comments array
+                if (!state.audios[index].comments) {
+                    // If no comments array exists, initialize it as an empty array
+                    state.audios[index].comments = []
+                }
+
+                // Append the new comments to the existing comments array
+                state.audios[index].comments = [
+                    ...state.audios[index].comments,
+                    ...commentsList
+                ]
+            }
         },
 
         updateComments: (state, action) => {
@@ -66,7 +78,7 @@ const audioSlice = createSlice({
 })
 
 // Action creators are generated for each case reducer function
-export const { setAudio, updateLikeDislike, updateComments } =
+export const { setAudio, updateLikeDislike, updateComments, addComments } =
     audioSlice.actions
 
 export default audioSlice.reducer
