@@ -46,7 +46,6 @@ const authentication = catchAsync(async (req, res, next) => {
 })
 
 const refreshTokenFn = catchAsync((req, res, next) => {
-    console.log('heng??')
     const refreshToken = req.cookies.refreshToken
     if (!refreshToken) {
         return next(new AppError('invalid refresh token', 401))

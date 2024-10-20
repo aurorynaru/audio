@@ -1,8 +1,8 @@
 'use strict'
 const { Model, DataTypes } = require('sequelize')
 const sequelize = require('../config/database')
-const likeDislikes = sequelize.define(
-    'LikeDislikes',
+const commentLikeDislikes = sequelize.define(
+    'CommentLikeDislikes',
     {
         id: {
             allowNull: false,
@@ -23,11 +23,11 @@ const likeDislikes = sequelize.define(
             },
             onDelete: 'CASCADE'
         },
-        postId: {
+        commentId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: 'audio',
+                model: 'replies',
                 key: 'id'
             },
             onDelete: 'CASCADE'
@@ -43,9 +43,8 @@ const likeDislikes = sequelize.define(
     },
     {
         freezeTableName: true,
-        modelName: 'LikeDislikes'
+        modelName: 'CommentLikeDislikes'
     }
 )
 
-module.exports = likeDislikes
-// npx sequelize-cli model:generate --name commentLikeDislike --attributes
+module.exports = commentLikeDislikes

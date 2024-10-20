@@ -17,7 +17,6 @@ import { setPlayer } from '@/src/features/player/playerSlice'
 import SliderComponent from '../SliderComponent'
 import { api } from '@/src/utils/api'
 import { updateLikeDislike } from '@/src/features/audio/audioSlice'
-import { setSessionExpired } from '@/src/features/user/userSlice'
 
 const Player = ({
     id,
@@ -40,6 +39,8 @@ const Player = ({
     const [isPlaying, setIsPlaying] = useState(false)
     const [volume, setVolume] = useState(0.25)
     const [oldVolume, setOldVolume] = useState(0)
+
+    const [sliderHidden, setSliderHidden] = useState(false)
 
     useEffect(() => {
         const audio = audioRef.current
@@ -96,7 +97,6 @@ const Player = ({
                 },
                 { withCredentials: true }
             )
-            console.log(res)
             if (res.status === 200) {
                 const updatedPost = {
                     id: res.data.interactionData.postId,
@@ -109,21 +109,6 @@ const Player = ({
                 dispatch(updateLikeDislike(updatedPost))
             }
         } catch (error) {
-            if (
-                error.response.data.message === 'invalid refresh token' &&
-                error.status === 401
-            ) {
-                dispatch(setSessionExpired(true))
-                dispatch(
-                    setAuthMode({
-                        login: true,
-                        register: false,
-                        close: false
-                    })
-                )
-
-                localStorage.removeItem('accessToken')
-            }
             console.log(error)
         }
     }
@@ -162,13 +147,21 @@ const Player = ({
         }
     }
 
+    const onEnterVolumeSlider = () => {
+        setSliderHidden(true)
+    }
+
+    const onLeaveVolumeSlider = () => {
+        setSliderHidden(false)
+    }
+
     return (
         <>
             <div className='hidden'>
                 <audio ref={audioRef} src={audioUrl} />
             </div>
 
-            <div className='flex justify-evenly items-center w-full'>
+            <div className='flex flex-col justify-evenly items-center w-full'>
                 <div className='flex flex-col gap-5  w-10/12 '>
                     <div className='  flex justify-evenly items-center gap-4 w-full py-1'>
                         <div className='flex gap-2'>
@@ -242,28 +235,35 @@ const Player = ({
                         )}
                     </div>
                 </div>
-                <div className='h-fit flex flex-col gap-2'>
-                    <SliderComponent
-                        max={100}
-                        sliderVal={[volume]}
-                        setVolumeFn={setVolume}
-                    />
+                <div
+                    className='h-fit flex  gap-1 mt-4 justify-start items-start w-10/12'
+                    onMouseEnter={onEnterVolumeSlider}
+                    onMouseLeave={onLeaveVolumeSlider}
+                >
                     {volume < 0.65 && volume > 0.001 ? (
                         <Volume1
-                            className='h-6 w-6 cursor-pointer'
+                            className='h-5 w-5 cursor-pointer'
                             onClick={() => handleMute()}
                         />
                     ) : volume >= 0.65 ? (
                         <Volume2
-                            className='h-6 w-6 cursor-pointer'
+                            className='h-5 w-5 cursor-pointer'
                             onClick={() => handleMute()}
                         />
                     ) : (
                         <VolumeOff
-                            className='h-6 w-6 cursor-pointer  '
+                            className='h-5 w-5 cursor-pointer  '
                             onClick={() => handleOldVolume()}
                         />
                     )}
+
+                    <div className={`${sliderHidden ? ' ' : 'hidden'}`}>
+                        <SliderComponent
+                            max={100}
+                            sliderVal={[volume]}
+                            setVolumeFn={setVolume}
+                        />
+                    </div>
                     {/* <TooltipComponent
                         Comp={
                             <SliderComponent

@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt')
 const AppError = require('../utils/appError')
 const audio = require('./audio')
 const likeDislikes = require('./likedislike')
+const replies = require('./reply')
 
 const user = sequelize.define(
     'User',
@@ -113,6 +114,9 @@ const user = sequelize.define(
 
 user.hasMany(audio, { foreignKey: 'createdBy' })
 audio.belongsTo(user, { foreignKey: 'createdBy' })
+
+user.hasMany(replies, { foreignKey: 'userId' })
+replies.belongsTo(user, { foreignKey: 'userId' })
 
 user.hasMany(likeDislikes, { foreignKey: 'userId' })
 likeDislikes.belongsTo(user, { foreignKey: 'userId' })

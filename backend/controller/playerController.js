@@ -40,8 +40,6 @@ const LikeDislike = catchAsync(async (req, res, next) => {
         where: { userId: loginUser.id, postId: audioPost.id }
     })
 
-    console.log('hengs?', checkLd)
-
     if (!checkLd) {
         await likeDislikes.create({
             isLike,
@@ -66,7 +64,7 @@ const LikeDislike = catchAsync(async (req, res, next) => {
     const data = await likeDislikes.findByPk(postId)
 
     const userInteraction = await likeDislikes.findOne({
-        where: { userId, postId: loginUser.id }
+        where: { userId, postId: audioPost.id }
     })
 
     let isUserLikedDislike = ''

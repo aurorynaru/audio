@@ -1,6 +1,8 @@
 'use strict'
 const { Model, DataTypes } = require('sequelize')
 const sequelize = require('../config/database')
+const user = require('./user')
+const CommentLikeDislikes = require('./commentlikedislike')
 const replies = sequelize.define(
     'Replies',
     {
@@ -52,3 +54,8 @@ const replies = sequelize.define(
     },
     { freezeTableName: true, modelName: 'Replies' }
 )
+
+replies.hasMany(CommentLikeDislikes, { foreignKey: 'commentId' })
+CommentLikeDislikes.belongsTo(replies, { foreignKey: 'commentId' })
+
+module.exports = replies

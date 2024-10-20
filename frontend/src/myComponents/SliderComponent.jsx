@@ -7,8 +7,8 @@ const SliderComponent = ({ max = 100, step = 1, sliderVal, setVolumeFn }) => {
             sliderVal={sliderVal}
             max={max}
             step={step}
-            className={'w-5 h-24'}
-            orientation={'vertical'}
+            className={'w-36 h-5'}
+            // orientation={'vertical'}
             setVolumeFn={setVolumeFn}
         />
     )

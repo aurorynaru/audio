@@ -10,6 +10,7 @@ const {
 const jwt = require('jsonwebtoken')
 const s3 = require('../utils/s3Client')
 const AppError = require('../utils/appError')
+const getAvatarUrl = require('../utils/getAvatarUrl')
 
 const signUp = catchAsync(async (req, res, next) => {
     const profilePicture = req.file.path.split(`\\`)[2]
@@ -85,11 +86,6 @@ const logIn = catchAsync(async (req, res, next) => {
         }
     }
 
-    const getAvatarUrl = (profilePicture) => {
-        const bucketName = process.env.BUCKET_NAME_MODEL_IMG
-        return `https://${bucketName}.s3.ap-southeast-1.amazonaws.com/avatar/${profilePicture}`
-    }
-
     newRes.imgUrl = getAvatarUrl(result.profilePicture)
 
     const accessToken = generateToken({ id: result.id })
@@ -111,4 +107,45 @@ const logIn = catchAsync(async (req, res, next) => {
     return res.status(200).json(userData)
 })
 
-module.exports = { signUp, logIn }
+const getUser = catchAsync(async (req, res, next) => {
+    let idToken = ''
+
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        idToken = req.headers.authorization.split(' ')[1]
+    }
+
+    const tokenDetail = jwt.verify(
+        idToken,
+        process.env.JWT_TOKEN,
+        (err, data) => {
+            if (err) {
+                console.log('expired')
+                return next(new AppError('access token expired', 403))
+            }
+            return data
+        }
+    )
+
+    const loginUser = await user.findByPk(tokenDetail.id)
+
+    if (!loginUser) {
+        return next(new AppError('User no longer exists', 400))
+    }
+
+    const resUser = loginUser.toJSON()
+
+    delete resUser.deletedAt
+    delete resUser.password
+    delete resUser.isAdmin
+
+    resUser.imgUrl = getAvatarUrl(resUser.profilePicture)
+
+    return res.status(200).json({
+        user: resUser
+    })
+})
+
+module.exports = { signUp, logIn, getUser }
