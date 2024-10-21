@@ -1,7 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react'
 import axios from 'axios'
-import HomeComponent from './HomeComponent'
-import { useDebounce } from '../utils/debounce'
 import { useDispatch, useSelector } from 'react-redux'
 import { setAudio } from '../features/audio/audioSlice'
 import Player from './Player/Player'
@@ -15,6 +13,7 @@ const InfiniteScroll = () => {
     const dispatch = useDispatch()
     const { audios } = useSelector((state) => state.audio)
     const { token, user } = useSelector((state) => state.user)
+    const [audioArr, setAudioArr] = useState([])
 
     useEffect(() => {
         const fetchAudios = async () => {
@@ -37,7 +36,8 @@ const InfiniteScroll = () => {
             if (response.data.result.length <= 0) {
                 setIsEmpty(true)
             } else {
-                dispatch(setAudio([...audios, ...response.data.result]))
+                setAudioArr((prev) => [...prev, ...response.data.result])
+                // dispatch(setAudio(arr))
 
                 setLoading(false)
             }
@@ -69,10 +69,14 @@ const InfiniteScroll = () => {
         }
     }, [loading])
 
+    useEffect(() => {
+        dispatch(setAudio(audioArr))
+    }, [audioArr])
+
     return (
         <div className='flex flex-col mx-auto gap-5'>
-            {audios.length > 0 &&
-                audios.map((audio) => {
+            {audioArr.length > 0 &&
+                audioArr.map((audio) => {
                     const {
                         id,
                         createdBy,
@@ -116,7 +120,7 @@ const InfiniteScroll = () => {
                                 </div>
                             </div>
                             <div className='w-1/2  md:w-full border-2  rounded-2xl'>
-                                <Comments user={user} id={id} />
+                                <Comments user={user} id={id} token={token} />
                             </div>
                         </div>
                     )

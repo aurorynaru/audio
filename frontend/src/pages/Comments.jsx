@@ -19,27 +19,30 @@ const Comments = ({ ...props }) => {
     // const commentObj = useSelector((state) =>
     //     state.audio.audios.find((audio) => audio.id === props.id)
     // )
-    console.log(audioComments)
+
     useEffect(() => {
         const getComments = async () => {
             setLoadingComments(true)
             try {
+                const config = {
+                    headers: { Authorization: `Bearer ${props.token}` }
+                }
+
                 const url = `http://localhost:3003/api/audio/get-audio-comment?page=${commentPage}&limit=10`
-                const res = await axios.post(url, { postId: props.id })
+                const res = props.token
+                    ? await axios.post(`${url}`, { postId: props.id }, config)
+                    : await axios.post(`${url}`, { postId: props.id })
+
+                // const res = await axios.post(url, { postId: props.id })
                 if (res.status === 200) {
                     const fetchedComments = res.data.result
+
                     // console.log(fetchedComments)
                     if (fetchedComments.length > 0 && hasMore) {
                         setAudioComments((prev) => {
                             return [...new Set([...prev, ...fetchedComments])]
                         })
 
-                        // dispatch(
-                        //     addComments({
-                        //         comment: fetchedComments,
-                        //         id: props.id
-                        //     })
-                        // )
                         setIni(true)
                     } else {
                         setHasMore(false)
@@ -76,6 +79,16 @@ const Comments = ({ ...props }) => {
             }
         }
     }, [loadingComments])
+
+    useEffect(() => {
+        dispatch(
+            addComments({
+                comment: audioComments,
+                id: props.id
+            })
+        )
+    }, [audioComments])
+
     return (
         <div className='w-full rounded-xl p-2'>
             {props.user && (
@@ -90,10 +103,17 @@ const Comments = ({ ...props }) => {
                 <ScrollArea className='flex flex-col overflow-hidden overflow-y-auto h-80 py-2'>
                     {audioComments.length > 0 &&
                         audioComments.map((comment, index) => {
+                            console.log(comment.isUserLikedDislike)
                             return (
                                 <Fragment key={index}>
                                     <Separator className='my-2' />
                                     <CommentList
+                                        isUserLikedDislike={
+                                            comment.isUserLikedDislike
+                                        }
+                                        setCommentData={setAudioComments}
+                                        likes={comment.likes}
+                                        dislikes={comment.dislikes}
                                         id={comment.id}
                                         profilePicture={
                                             comment.User.profilePicture
