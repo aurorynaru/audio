@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 import BottomBar from '../myComponents/BottomBar'
 import { useDispatch, useSelector } from 'react-redux'
-import { setAuthMode, setToken, setUser } from '../features/user/userSlice'
+import { setAuthMode, setUser } from '../features/user/userSlice'
 import ModalComponent from '../myComponents/ModalComponent'
 import RegisterComponent from '../myComponents/RegisterComponent'
 import LoginComponent from '../myComponents/LoginComponent'
@@ -13,13 +13,8 @@ import { api } from '../utils/api'
 const Home = () => {
     const dispatch = useDispatch()
     const { user } = useSelector((state) => state.user)
-
-    if (
-        localStorage.getItem('accessToken') &&
-        !Boolean(useSelector((state) => state.user.token))
-    ) {
-        dispatch(setToken(localStorage.getItem('accessToken')))
-    }
+    const { authMode } = useSelector((state) => state.user)
+    const isAuth = useSelector((state) => state.user.isAuthenticated)
 
     const getUserInfo = async () => {
         try {
@@ -38,12 +33,6 @@ const Home = () => {
             getUserInfo()
         }
     }, [])
-
-    const { authMode } = useSelector((state) => state.user)
-
-    const isAuth =
-        Boolean(useSelector((state) => state.user.token)) ||
-        Boolean(localStorage.getItem('accessToken'))
 
     const closeModal = () => {
         dispatch(

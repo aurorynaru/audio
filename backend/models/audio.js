@@ -35,6 +35,10 @@ const audio = sequelize.define(
                 key: 'id'
             }
         },
+        tags: {
+            type: DataTypes.ARRAY(DataTypes.STRING),
+            allowNull: true
+        },
         createdAt: {
             allowNull: false,
             type: DataTypes.DATE

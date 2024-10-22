@@ -32,6 +32,10 @@ module.exports = {
                     key: 'id'
                 }
             },
+            tags: {
+                type: Sequelize.ARRAY(Sequelize.STRING),
+                allowNull: true // You can set to `false` if tags are required
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE

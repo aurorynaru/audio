@@ -39,7 +39,7 @@ const CommentList = ({ setCommentData, ...props }) => {
             console.log(error)
         }
     }
-
+    console.log(props.isUserLikedDislike)
     return (
         <div className='flex justify-start items-center gap-2  '>
             <div className='flex flex-col gap-1'>

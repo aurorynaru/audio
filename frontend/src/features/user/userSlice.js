@@ -3,6 +3,7 @@ const initialState = {
     mode: 'dark',
     user: null,
     token: null,
+    isAuthenticated: false,
     authMode: {
         login: false,
         register: false,
@@ -21,6 +22,7 @@ const userSlice = createSlice({
         setLogin: (state, action) => {
             state.token = action.payload.token
             state.user = action.payload.user
+            state.isAuthenticated = true
         },
         setUser: (state, action) => {
             state.user = action.payload.user
@@ -34,6 +36,12 @@ const userSlice = createSlice({
 
         setSessionExpired: (state, action) => {
             state.SessionExpired = action.payload
+        },
+        setLogOut: (state, action) => {
+            state.user = null
+            state.token = null
+            localStorage.removeItem('accessToken')
+            state.isAuthenticated = false
         }
     }
 })
@@ -45,7 +53,8 @@ export const {
     setAuthMode,
     setSessionExpired,
     setToken,
-    setUser
+    setUser,
+    setLogOut
 } = userSlice.actions
 
 export default userSlice.reducer

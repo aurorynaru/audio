@@ -5,6 +5,7 @@ const {
     getAudio,
     sendComment,
     getAudioComments,
+    LikeDislike,
     LikeDislikeComment
 } = require('../controller/audioController')
 const { uploadFiles } = require('../utils/multerStorage')
@@ -13,7 +14,7 @@ const {
     refreshTokenFn
 } = require('../middleware/authentication')
 const { uploadFilesController } = require('../controller/uploadController')
-const { LikeDislike } = require('../controller/playerController')
+
 const router = express.Router()
 router.post(
     '/create',

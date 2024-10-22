@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt')
 const {
     generateToken,
     generateRefreshToken,
+    deleteToken,
     tokenCache
 } = require('../utils/generateToken')
 const jwt = require('jsonwebtoken')
@@ -105,6 +106,29 @@ const logIn = catchAsync(async (req, res, next) => {
     }
     res.setHeader('Access-Control-Allow-Credentials', 'true')
     return res.status(200).json(userData)
+})
+
+const logout = catchAsync(async (req, res, next) => {
+    const refreshToken = req.cookies.refreshToken
+    if (refreshToken) {
+        const decoded = jwt.decode(refreshToken)
+        tokenCache.del(decoded.id) // Remove from NodeCache
+        // Optionally, also remove it from the file cache if needed
+        deleteToken({
+            id: decoded.id
+        }) // A helper function to delete from file
+    }
+
+    // Clear the cookie by setting its expiry date in the past
+    res.cookie('refreshToken', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Lax',
+        maxAge: 0 // Set the expiration to 0 to delete it
+    })
+
+    // Respond with success
+    res.status(200).json({ message: 'Logged out successfully' })
 })
 
 const getUser = catchAsync(async (req, res, next) => {

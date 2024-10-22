@@ -13,6 +13,41 @@ const replies = require('../models/reply')
 const getAvatarUrl = require('../utils/getAvatarUrl')
 const commentLikeDislikes = require('../models/commentlikedislike')
 
+const getQuery = async (fn, query) => {
+    const res = await fn({
+        where: query
+    })
+
+    return res
+}
+
+const getUserId = (headers) => {
+    let idToken = ''
+    let userId = null
+
+    if (headers && headers.startsWith('Bearer')) {
+        idToken = headers.split(' ')[1]
+
+        const tokenDetail = jwt.verify(
+            idToken,
+            process.env.JWT_TOKEN,
+            (err, data) => {
+                if (err) {
+                    return false
+                } else {
+                    return data
+                }
+            }
+        )
+
+        if (tokenDetail) {
+            userId = tokenDetail.id
+        }
+    }
+
+    return userId
+}
+
 const createAudio = catchAsync(async (req, res, next) => {
     const userId = req.user.id
     let coverKey = ''
@@ -67,7 +102,8 @@ const getAllAudio = catchAsync(async (req, res, next) => {
             'audioKey',
             'coverKey',
             'createdBy',
-            'createdAt'
+            'createdAt',
+            'tags'
         ],
         include: [
             {
@@ -75,41 +111,11 @@ const getAllAudio = catchAsync(async (req, res, next) => {
                 attributes: ['id', 'userName', 'email', 'profilePicture']
             }
         ],
-        limit: parseInt(limit), // limit the number of items
-        offset: (page - 1) * limit // skip previous items
+        limit: parseInt(limit),
+        offset: (page - 1) * limit
     })
 
-    let idToken = ''
-    let userId = null
-
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer')
-    ) {
-        idToken = req.headers.authorization.split(' ')[1]
-        const tokenDetail = jwt.verify(
-            idToken,
-            process.env.JWT_TOKEN,
-            (err, data) => {
-                if (err) {
-                    return false
-                } else {
-                    return data
-                }
-            }
-        )
-
-        if (tokenDetail) {
-            userId = tokenDetail.id
-        }
-
-        // console.log(yo)
-
-        // if (jwt.verify(idToken, process.env.JWT_TOKEN)) {
-        //     const tokenDetail = jwt.verify(idToken, process.env.JWT_TOKEN)
-        //     userId = tokenDetail.id
-        // }
-    }
+    const userId = getUserId(req.headers.authorization)
 
     const result = await Promise.all(
         audioResult.map(async (data) => {
@@ -143,28 +149,29 @@ const getAllAudio = catchAsync(async (req, res, next) => {
             jsonData.audioKey = await getS3Url(paramsAudio)
             jsonData.coverKey = await getS3Url(paramsCover)
 
-            const likesCount = await likeDislikes.count({
-                where: { postId: jsonData.id, isLike: true }
-            })
-            const disLikesCount = await likeDislikes.count({
-                where: { postId: jsonData.id, isLike: false }
-            })
-            if (userId != null) {
+            const likesCount = await getQuery(
+                likeDislikes.count.bind(likeDislikes),
+                { postId: jsonData.id, isLike: true }
+            )
+
+            const disLikesCount = await getQuery(
+                likeDislikes.count.bind(likeDislikes),
+                { postId: jsonData.id, isLike: false }
+            )
+
+            if (userId) {
                 const userInteraction = await likeDislikes.findOne({
                     where: { userId, postId: jsonData.id }
                 })
 
                 if (userInteraction) {
-                    // If user has liked or disliked, store the value in jsonData
                     jsonData.isUserLikedDislike = userInteraction.isLike
                         ? 'liked'
                         : 'disliked'
                 } else {
-                    // If user has not interacted, mark as 'none'
                     jsonData.isUserLikedDislike = 'none'
                 }
             } else {
-                // If there's no user (not authenticated), mark as 'none'
                 jsonData.isUserLikedDislike = 'none'
             }
             jsonData.likes = likesCount
@@ -202,29 +209,7 @@ const getAudio = catchAsync(async (req, res, next) => {
 const sendComment = catchAsync(async (req, res, next) => {
     const { content, postId } = req.body
 
-    let idToken = ''
-    let userId = null
-
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer')
-    ) {
-        idToken = req.headers.authorization.split(' ')[1]
-        const tokenDetail = jwt.verify(
-            idToken,
-            process.env.JWT_TOKEN,
-            (err, data) => {
-                if (err) {
-                    return false
-                } else {
-                    return data
-                }
-            }
-        )
-        if (tokenDetail) {
-            userId = tokenDetail.id
-        }
-    }
+    const userId = getUserId(req.headers.authorization)
 
     const newReply = await replies.create(
         {
@@ -265,34 +250,98 @@ const sendComment = catchAsync(async (req, res, next) => {
     })
 })
 
+const LikeDislike = catchAsync(async (req, res, next) => {
+    const { postId, isLike } = req.body
+    const userId = getUserId(req.headers.authorization)
+    if (userId) {
+        return next(new AppError('Please login to gain access', 401))
+    }
+
+    const loginUser = await user.findByPk(userId)
+
+    if (!loginUser) {
+        return next(new AppError('Invalid user', 401))
+    }
+    const audioPost = await audio.findByPk(postId)
+
+    if (!audioPost) {
+        return next(new AppError('Invalid post', 401))
+    }
+
+    const checkLd = await likeDislikes.findOne({
+        where: { userId: loginUser.id, postId: audioPost.id }
+    })
+
+    if (!checkLd) {
+        await likeDislikes.create({
+            isLike,
+            userId,
+            postId
+        })
+    } else {
+        if (checkLd.isLike === isLike) {
+            await likeDislikes.destroy({
+                where: { id: checkLd.id }
+            })
+        } else {
+            await likeDislikes.update(
+                { isLike: !checkLd.isLike },
+                {
+                    where: { id: checkLd.id }
+                }
+            )
+        }
+    }
+
+    const data = await likeDislikes.findByPk(postId)
+
+    const userInteraction = await likeDislikes.findOne({
+        where: { userId, postId: audioPost.id }
+    })
+
+    let isUserLikedDislike = ''
+
+    if (userInteraction) {
+        isUserLikedDislike = userInteraction.isLike ? 'liked' : 'disliked'
+    } else {
+        isUserLikedDislike = isUserLikedDislike.isUserLikedDislike = 'none'
+    }
+
+    const likesCount = await getQuery(likeDislikes.count.bind(likeDislikes), {
+        postId: jsonData.id,
+        isLike: true
+    })
+
+    const disLikesCount = await getQuery(
+        likeDislikes.count.bind(likeDislikes),
+        { postId: jsonData.id, isLike: false }
+    )
+
+    let interactionData = {}
+
+    if (data) {
+        interactionData = data.toJSON()
+
+        interactionData.isUserLikedDislike = isUserLikedDislike
+        interactionData.likes = likesCount
+        interactionData.dislikes = disLikesCount
+    } else {
+        interactionData.isUserLikedDislike = isUserLikedDislike
+        interactionData.likes = likesCount
+        interactionData.dislikes = disLikesCount
+        interactionData.postId = postId
+    }
+
+    return res.status(200).json({
+        interactionData
+    })
+})
+
 const getAudioComments = catchAsync(async (req, res, next) => {
     const { page = 1, limit = 10, sort = ' ' } = req.query
     const { postId } = req.body
 
-    let idToken = ''
-    let userId = null
-
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer')
-    ) {
-        idToken = req.headers.authorization.split(' ')[1]
-        const tokenDetail = jwt.verify(
-            idToken,
-            process.env.JWT_TOKEN,
-            (err, data) => {
-                if (err) {
-                    return false
-                } else {
-                    return data
-                }
-            }
-        )
-
-        if (tokenDetail) {
-            userId = tokenDetail.id
-        }
-    }
+    const userId = getUserId(req.headers.authorization)
 
     const resReplies = await replies.findAll({
         where: { postId: postId, parentReplyId: null },
@@ -323,14 +372,17 @@ const getAudioComments = catchAsync(async (req, res, next) => {
                 jsonData.User.profilePicture
             )
 
-            const likesCount = await commentLikeDislikes.count({
-                where: { commentId: jsonData.id, isLike: true }
-            })
-            const disLikesCount = await commentLikeDislikes.count({
-                where: { commentId: jsonData.id, isLike: false }
-            })
+            const likesCount = await getQuery(
+                commentLikeDislikes.count.bind(commentLikeDislikes),
+                { commentId: jsonData.id, isLike: true }
+            )
 
-            if (userId != null) {
+            const disLikesCount = await getQuery(
+                commentLikeDislikes.count.bind(commentLikeDislikes),
+                { commentId: jsonData.id, isLike: false }
+            )
+
+            if (userId) {
                 const userInteraction = await commentLikeDislikes.findOne({
                     where: { userId, commentId: jsonData.id }
                 })
@@ -353,71 +405,6 @@ const getAudioComments = catchAsync(async (req, res, next) => {
         })
     )
 
-    // const results = await Promise.all(
-    //     audioResult.map(async (data) => {
-    //         const jsonData = data.toJSON()
-
-    //         const paramsAudio = getSignedParams('audioKey', jsonData.audioKey)
-    //         const paramsCover = getSignedParams('coverKey', jsonData.coverKey)
-
-    //         // const comments = await replies.findAll({
-    //         //     where: { postId: jsonData.id, parentReplyId: null },
-    //         //     include: {
-    //         //         model: user,
-    //         //         attributes: ['userName', 'email', 'profilePicture']
-    //         //     },
-    //         //     order: [['createdAt', 'DESC']]
-    //         // })
-
-    //         jsonData.User = {
-    //             ...jsonData.User,
-    //             profilePicture: getAvatarUrl(jsonData.User.profilePicture)
-    //         }
-
-    //         // const newComments = comments.map((comment) => {
-    //         //     const commentJson = comment.toJSON()
-    //         //     commentJson.User.profilePicture = getAvatarUrl(
-    //         //         commentJson.User.profilePicture
-    //         //     )
-    //         //     return commentJson
-    //         // })
-
-    //         jsonData.audioKey = await getS3Url(paramsAudio)
-    //         jsonData.coverKey = await getS3Url(paramsCover)
-
-    //         const likesCount = await likeDislikes.count({
-    //             where: { postId: jsonData.id, isLike: true }
-    //         })
-    //         const disLikesCount = await likeDislikes.count({
-    //             where: { postId: jsonData.id, isLike: false }
-    //         })
-    //         if (userId != null) {
-    //             const userInteraction = await likeDislikes.findOne({
-    //                 where: { userId, postId: jsonData.id }
-    //             })
-
-    //             if (userInteraction) {
-    //                 // If user has liked or disliked, store the value in jsonData
-    //                 jsonData.isUserLikedDislike = userInteraction.isLike
-    //                     ? 'liked'
-    //                     : 'disliked'
-    //             } else {
-    //                 // If user has not interacted, mark as 'none'
-    //                 jsonData.isUserLikedDislike = 'none'
-    //             }
-    //         } else {
-    //             // If there's no user (not authenticated), mark as 'none'
-    //             jsonData.isUserLikedDislike = 'none'
-    //         }
-    //         jsonData.likes = likesCount
-    //         jsonData.dislikes = disLikesCount
-    //         jsonData.comments = []
-    //         // jsonData.comments = newComments
-
-    //         return jsonData
-    //     })
-    // )
-
     return res.status(200).json({
         result
     })
@@ -426,29 +413,10 @@ const getAudioComments = catchAsync(async (req, res, next) => {
 const LikeDislikeComment = catchAsync(async (req, res, next) => {
     const { commentId, isLike } = req.body
 
-    let idToken = ''
-    let userId = null
+    const userId = getUserId(req.headers.authorization)
 
-    if (
-        req.headers.authorization &&
-        req.headers.authorization.startsWith('Bearer')
-    ) {
-        idToken = req.headers.authorization.split(' ')[1]
-        const tokenDetail = jwt.verify(
-            idToken,
-            process.env.JWT_TOKEN,
-            (err, data) => {
-                if (err) {
-                    return false
-                } else {
-                    return data
-                }
-            }
-        )
-
-        if (tokenDetail) {
-            userId = tokenDetail.id
-        }
+    if (!userId) {
+        return next(new AppError('Please login to gain access', 401))
     }
 
     const loginUser = await user.findByPk(userId)
@@ -527,11 +495,13 @@ const LikeDislikeComment = catchAsync(async (req, res, next) => {
         result
     })
 })
+
 module.exports = {
     createAudio,
     getAllAudio,
     getAudio,
     sendComment,
     getAudioComments,
-    LikeDislikeComment
+    LikeDislikeComment,
+    LikeDislike
 }

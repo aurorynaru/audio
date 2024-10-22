@@ -21,7 +21,6 @@ api.interceptors.request.use(
     }
 )
 
-// Response interceptor to handle 401 or 403 errors
 api.interceptors.response.use(
     (response) => {
         return response
