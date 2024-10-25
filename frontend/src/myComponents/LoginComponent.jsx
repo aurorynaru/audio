@@ -64,15 +64,13 @@ const LoginComponent = ({ open, onClose }) => {
             )
 
             if (res.status === 200) {
-                console.log(res.data)
+                localStorage.setItem('accessToken', res.data.accessToken)
                 dispatch(
                     setLogin({
                         user: res.data.user,
                         token: res.data.accessToken
                     })
                 )
-
-                navigate('/')
             }
         } catch (error) {
             if (error.response.data.message) {

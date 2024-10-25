@@ -29,6 +29,6 @@ router.get('/get-user', getUser)
 
 router.get('/verify-token', verifyToken)
 
-router.post('/refresh', refreshTokenFn)
+router.post('/refresh-token', refreshTokenFn)
 
 module.exports = router

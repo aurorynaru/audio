@@ -6,7 +6,6 @@ import { rehydrateAuth, setAuthMode, setUser } from '../features/user/userSlice'
 import ModalComponent from '../myComponents/ModalComponent'
 import RegisterComponent from '../myComponents/RegisterComponent'
 import LoginComponent from '../myComponents/LoginComponent'
-
 import InfiniteScroll from '../myComponents/InfiniteScroll'
 import { api } from '../utils/api'
 
@@ -17,26 +16,26 @@ const Home = () => {
     const isAuth = useSelector((state) => state.user.isAuthenticated)
 
     useEffect(() => {
-        dispatch(rehydrateAuth()) // Rehydrate auth state on app load
+        dispatch(rehydrateAuth())
     }, [dispatch])
 
-    const getUserInfo = async () => {
-        try {
-            const res = await api.get('api/auth/get-user')
+    // const getUserInfo = async () => {
+    //     try {
+    //         const res = await api.get('api/auth/get-user')
 
-            if (res.status === 200) {
-                dispatch(setUser(res.data))
-            }
-        } catch (error) {
-            console.log(error)
-        }
-    }
+    //         if (res.status === 200) {
+    //             dispatch(setUser(res.data))
+    //         }
+    //     } catch (error) {
+    //         console.log(error)
+    //     }
+    // }
 
-    useEffect(() => {
-        if (!user) {
-            getUserInfo()
-        }
-    }, [])
+    // useEffect(() => {
+    //     if (!user) {
+    //         getUserInfo()
+    //     }
+    // }, [])
 
     const closeModal = () => {
         dispatch(

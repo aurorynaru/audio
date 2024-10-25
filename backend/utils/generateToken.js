@@ -8,7 +8,7 @@ const cacheFilePath = path.join(process.cwd(), 'tokenCache.json')
 let tokenCache = null
 
 if (!tokenCache) {
-    tokenCache = new NodeCache({ stdTTL: 7 * 24 * 60 * 60 })
+    tokenCache = new NodeCache({ stdTTL: process.env.NODECACHE_EXPIRATION })
 }
 
 const saveCacheToFile = () => {
@@ -42,7 +42,7 @@ const generateRefreshToken = (payload) => {
         expiresIn: process.env.REFRESH_JWT_EXPIRES_IN
     })
     tokenCache.set(payload.id, refreshToken)
-    saveCacheToFile()
+    // saveCacheToFile()
     return refreshToken
 }
 

@@ -46,6 +46,7 @@ const authentication = catchAsync(async (req, res, next) => {
 })
 
 const refreshTokenFn = catchAsync(async (req, res, next) => {
+    console.log('yp')
     const refreshToken = req.cookies.refreshToken
     if (!refreshToken) {
         return next(new AppError('invalid refresh token', 401))
@@ -64,7 +65,8 @@ const refreshTokenFn = catchAsync(async (req, res, next) => {
         }
     }
 
-    const storedToken = tokenCache.get(decoded.id) || savedCache[decoded.id]
+    // const storedToken = tokenCache.get(decoded.id) || savedCache[decoded.id]
+    const storedToken = tokenCache.get(decoded.id)
 
     if (!storedToken || storedToken !== refreshToken) {
         return next(new AppError("Token doesn't exist or doesn't match", 403))
@@ -90,7 +92,7 @@ const refreshTokenFn = catchAsync(async (req, res, next) => {
 
     res.status(200).json({
         user,
-        accessToken: tokenDetail
+        newAccessToken: tokenDetail
     })
 })
 

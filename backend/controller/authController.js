@@ -104,6 +104,7 @@ const logIn = catchAsync(async (req, res, next) => {
         accessToken,
         user: newRes
     }
+    console.log(userData)
     res.setHeader('Access-Control-Allow-Credentials', 'true')
     return res.status(200).json(userData)
 })
@@ -164,13 +165,13 @@ const verifyToken = catchAsync(async (req, res, next) => {
     delete userData.password
     delete userData.deletedAt
 
-    const token = (userData.token = generateToken({
+    const newAccessToken = (userData.token = generateToken({
         id: userData.id
     }))
 
     res.status(200).json({
         userData,
-        token
+        newAccessToken
     })
 })
 
@@ -215,4 +216,4 @@ const getUser = catchAsync(async (req, res, next) => {
     })
 })
 
-module.exports = { signUp, logIn, getUser, verifyToken }
+module.exports = { signUp, logIn, getUser, verifyToken, logout }

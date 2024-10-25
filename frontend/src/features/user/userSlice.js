@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
+import axios from 'axios'
 const initialState = {
     mode: 'dark',
     user: null,
@@ -60,30 +61,41 @@ export const {
 export default userSlice.reducer
 
 export const rehydrateAuth = () => async (dispatch) => {
-    const accessToken = localStorage.getItem('accessToken')
+    let accessToken = localStorage.getItem('accessToken')
 
     if (accessToken) {
         try {
-            // Optionally verify accessToken with an API call
-            const response = await api.get('api/auth/verify-token', {
-                headers: { Authorization: `Bearer ${accessToken}` }
-            })
-            const userData = response.data // Assume the user data is returned
+            const response = await axios.get(
+                'http://localhost:3003/api/auth/verify-token',
+                {
+                    headers: { Authorization: `Bearer ${accessToken}` }
+                }
+            )
+            const { userData, newAccessToken } = response.data
 
-            // Set the credentials in Redux if token is valid
-            dispatch(setCredentials({ user: userData, accessToken }))
+            dispatch(setLogin({ user: userData, newAccessToken }))
+            return
         } catch (err) {
-            // If accessToken is invalid/expired, try to refresh it
-            try {
-                const refreshResponse = await api.post('api/auth/refresh-token')
-                const { accessToken, user } = refreshResponse.data
-
-                localStorage.setItem('accessToken', accessToken) // Save the new access token
-                dispatch(setCredentials({ user, accessToken })) // Rehydrate Redux state
-            } catch (refreshError) {
-                // If refresh token also fails, log the user out
-                dispatch(logout())
-            }
+            console.warn('Access token expired, attempting to refresh...')
         }
+    }
+
+    // If accessToken is undefined or invalid, try refreshing it
+    try {
+        const refreshResponse = await axios.post(
+            'http://localhost:3003/api/auth/refresh-token'
+        )
+        const { newAccessToken, user } = refreshResponse.data
+
+        // Save the new access token
+        localStorage.setItem('accessToken', newAccessToken)
+
+        // Update Redux state
+        dispatch(setLogin({ user, newAccessToken }))
+    } catch (refreshError) {
+        console.error('Failed to refresh token:', refreshError)
+
+        // If refresh token fails, log the user out
+        dispatch(setLogOut())
     }
 }
