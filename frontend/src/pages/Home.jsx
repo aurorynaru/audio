@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 
 import BottomBar from '../myComponents/BottomBar'
 import { useDispatch, useSelector } from 'react-redux'
-import { setAuthMode, setUser } from '../features/user/userSlice'
+import { rehydrateAuth, setAuthMode, setUser } from '../features/user/userSlice'
 import ModalComponent from '../myComponents/ModalComponent'
 import RegisterComponent from '../myComponents/RegisterComponent'
 import LoginComponent from '../myComponents/LoginComponent'
@@ -15,6 +15,10 @@ const Home = () => {
     const { user } = useSelector((state) => state.user)
     const { authMode } = useSelector((state) => state.user)
     const isAuth = useSelector((state) => state.user.isAuthenticated)
+
+    useEffect(() => {
+        dispatch(rehydrateAuth()) // Rehydrate auth state on app load
+    }, [dispatch])
 
     const getUserInfo = async () => {
         try {

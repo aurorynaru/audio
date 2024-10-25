@@ -58,3 +58,32 @@ export const {
 } = userSlice.actions
 
 export default userSlice.reducer
+
+export const rehydrateAuth = () => async (dispatch) => {
+    const accessToken = localStorage.getItem('accessToken')
+
+    if (accessToken) {
+        try {
+            // Optionally verify accessToken with an API call
+            const response = await api.get('api/auth/verify-token', {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            })
+            const userData = response.data // Assume the user data is returned
+
+            // Set the credentials in Redux if token is valid
+            dispatch(setCredentials({ user: userData, accessToken }))
+        } catch (err) {
+            // If accessToken is invalid/expired, try to refresh it
+            try {
+                const refreshResponse = await api.post('api/auth/refresh-token')
+                const { accessToken, user } = refreshResponse.data
+
+                localStorage.setItem('accessToken', accessToken) // Save the new access token
+                dispatch(setCredentials({ user, accessToken })) // Rehydrate Redux state
+            } catch (refreshError) {
+                // If refresh token also fails, log the user out
+                dispatch(logout())
+            }
+        }
+    }
+}

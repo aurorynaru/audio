@@ -45,7 +45,7 @@ const authentication = catchAsync(async (req, res, next) => {
     return next()
 })
 
-const refreshTokenFn = catchAsync((req, res, next) => {
+const refreshTokenFn = catchAsync(async (req, res, next) => {
     const refreshToken = req.cookies.refreshToken
     if (!refreshToken) {
         return next(new AppError('invalid refresh token', 401))
@@ -70,16 +70,27 @@ const refreshTokenFn = catchAsync((req, res, next) => {
         return next(new AppError("Token doesn't exist or doesn't match", 403))
     }
 
-    jwt.verify(refreshToken, process.env.JWT_TOKEN, (err, data) => {
-        if (err) {
-            return next(new AppError('invalid refresh token', 401))
+    const tokenDetail = jwt.verify(
+        refreshToken,
+        process.env.JWT_TOKEN,
+        (err, data) => {
+            if (err) {
+                return next(new AppError('invalid refresh token', 401))
+            }
+
+            return data
         }
+    )
 
-        const accessToken = generateToken({
-            id: data.id
-        })
+    const user = await user.findByPk(tokenDetail.id)
 
-        res.json({ accessToken })
+    if (!user) {
+        return next(new AppError('User no longer exists', 400))
+    }
+
+    res.status(200).json({
+        user,
+        accessToken: tokenDetail
     })
 })
 

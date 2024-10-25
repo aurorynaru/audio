@@ -48,6 +48,21 @@ const generateRefreshToken = (payload) => {
 
 const deleteToken = (payload) => {
     tokenCache.del(payload.id)
+
+    if (fs.existsSync(cacheFilePath)) {
+        try {
+            const fileData = fs.readFileSync(cacheFilePath, 'utf-8')
+            const savedCache = JSON.parse(fileData)
+            delete savedCache[tokenId]
+            fs.writeFileSync(
+                cacheFilePath,
+                JSON.stringify(savedCache, null, 2),
+                'utf-8'
+            )
+        } catch (err) {
+            console.error('Error updating cache file:', err)
+        }
+    }
 }
 
 module.exports = {

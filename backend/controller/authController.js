@@ -131,6 +131,49 @@ const logout = catchAsync(async (req, res, next) => {
     res.status(200).json({ message: 'Logged out successfully' })
 })
 
+const verifyToken = catchAsync(async (req, res, next) => {
+    let idToken = ''
+
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        idToken = req.headers.authorization.split(' ')[1]
+    }
+
+    const tokenDetail = jwt.verify(
+        idToken,
+        process.env.JWT_TOKEN,
+        (err, data) => {
+            if (err) {
+                console.log('expired')
+                return next(new AppError('access token expired', 403))
+            }
+            return data
+        }
+    )
+
+    const newUser = await user.findByPk(tokenDetail.id)
+
+    if (!newUser) {
+        return next(new AppError('User no longer exists', 400))
+    }
+
+    const userData = newUser.toJSON()
+
+    delete userData.password
+    delete userData.deletedAt
+
+    const token = (userData.token = generateToken({
+        id: userData.id
+    }))
+
+    res.status(200).json({
+        userData,
+        token
+    })
+})
+
 const getUser = catchAsync(async (req, res, next) => {
     let idToken = ''
 
@@ -172,4 +215,4 @@ const getUser = catchAsync(async (req, res, next) => {
     })
 })
 
-module.exports = { signUp, logIn, getUser }
+module.exports = { signUp, logIn, getUser, verifyToken }
