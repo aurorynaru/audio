@@ -104,8 +104,9 @@ const logIn = catchAsync(async (req, res, next) => {
         accessToken,
         user: newRes
     }
-    console.log(userData)
+
     res.setHeader('Access-Control-Allow-Credentials', 'true')
+
     return res.status(200).json(userData)
 })
 

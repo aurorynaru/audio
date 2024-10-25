@@ -36,7 +36,7 @@ api.interceptors.response.use(
                     { withCredentials: true }
                 )
 
-                const newAccessToken = response.data.accessToken
+                const newAccessToken = response.data.newAccessToken
 
                 localStorage.setItem('accessToken', newAccessToken)
 

@@ -83,7 +83,9 @@ export const rehydrateAuth = () => async (dispatch) => {
     // If accessToken is undefined or invalid, try refreshing it
     try {
         const refreshResponse = await axios.post(
-            'http://localhost:3003/api/auth/refresh-token'
+            'http://localhost:3003/api/auth/refresh-token',
+            {},
+            { withCredentials: true }
         )
         const { newAccessToken, user } = refreshResponse.data
 

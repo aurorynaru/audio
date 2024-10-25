@@ -52,7 +52,7 @@ const Home = () => {
             <div className='flex flex-col items-center w-fit '>
                 <div className='flex flex-col w-6/12 items-center'>
                     <div className='flex  justify-center items-center w-full py-2'>
-                        <InfiniteScroll />
+                        {/* <InfiniteScroll /> */}
                     </div>
                 </div>
             </div>

@@ -103,6 +103,10 @@ const Comments = ({ ...props }) => {
                 <ScrollArea className='flex flex-col overflow-hidden overflow-y-auto h-80 py-2'>
                     {audioComments.length > 0 &&
                         audioComments.map((comment, index) => {
+                            if (comment.postId == 1) {
+                                console.log(comment)
+                            }
+
                             return (
                                 <Fragment key={index}>
                                     <Separator className='my-2' />

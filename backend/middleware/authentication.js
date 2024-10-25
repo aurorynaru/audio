@@ -46,14 +46,14 @@ const authentication = catchAsync(async (req, res, next) => {
 })
 
 const refreshTokenFn = catchAsync(async (req, res, next) => {
-    console.log('yp')
     const refreshToken = req.cookies.refreshToken
+    console.log(refreshToken)
     if (!refreshToken) {
         return next(new AppError('invalid refresh token', 401))
     }
 
     const decoded = jwt.decode(refreshToken)
-
+    console.log(decoded)
     let savedCache = null
 
     if (fs.existsSync(cacheFilePath)) {
@@ -65,9 +65,9 @@ const refreshTokenFn = catchAsync(async (req, res, next) => {
         }
     }
 
-    // const storedToken = tokenCache.get(decoded.id) || savedCache[decoded.id]
+    //const storedToken = tokenCache.get(decoded.id) || savedCache[decoded.id]
     const storedToken = tokenCache.get(decoded.id)
-
+    console.log(storedToken)
     if (!storedToken || storedToken !== refreshToken) {
         return next(new AppError("Token doesn't exist or doesn't match", 403))
     }
@@ -84,14 +84,14 @@ const refreshTokenFn = catchAsync(async (req, res, next) => {
         }
     )
 
-    const user = await user.findByPk(tokenDetail.id)
+    const newUser = await user.findByPk(tokenDetail.id)
 
-    if (!user) {
+    if (!newUser) {
         return next(new AppError('User no longer exists', 400))
     }
 
     res.status(200).json({
-        user,
+        user: { ...newUser },
         newAccessToken: tokenDetail
     })
 })
